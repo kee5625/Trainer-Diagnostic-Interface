@@ -15,7 +15,7 @@ export function Trainers(){
                     <div className="bg-black relative h-full group-hover:bg-opacity-0 max-h-[500px] flex flex-wrap flex-col pt-[21rem] hover:bg-opacity-75 transform duration-300">
                         <div className=" bg-black p-8 h-full justify-end flex flex-col">
                             <h1 className="text-white mt-2 text-xl mb-5 transform  translate-y-20 uppercase group-hover:translate-y-0 duration-300 group-hover:text-orange-500"> 01⏤ Power Seat  </h1>
-                            <p className="opacity-0 text-white text-xl group-hover:opacity-80 transform duration-500 "> Crafting an effortless journey with user-first. </p>
+                            <p className="opacity-0 text-white text-xl group-hover:opacity-80 transform duration-500 ">  Simulating power seat functions & controls </p>
                         </div>
                     </div>
                 </article>
@@ -25,7 +25,7 @@ export function Trainers(){
                     <div className="bg-black relative h-full group-hover:bg-opacity-0 max-h-[500px]  flex flex-wrap flex-col pt-[21rem] hover:bg-opacity-75 transform duration-300">
                         <div className=" bg-black p-8 h-full justify-end flex flex-col">
                             <h1 className="text-white mt-2 text-xl mb-5 transform  translate-y-20 uppercase group-hover:translate-y-0 duration-300 group-hover:text-indigo-400"> 02⏤ Air Conditioning </h1>
-                            <p className="opacity-0 text-white text-xl group-hover:opacity-80 transform duration-500 "> Our platform is designed for simplicity and ease. </p>
+                            <p className="opacity-0 text-white text-xl group-hover:opacity-80 transform duration-500 "> Demonstrating automotive diagnostics and simulations </p>
                         </div>
                     </div>
                 </article>
@@ -35,7 +35,7 @@ export function Trainers(){
                     <div className="bg-black relative h-full group-hover:bg-opacity-0 max-h-[500px]  flex flex-wrap flex-col pt-[21rem] hover:bg-opacity-75 transform duration-300">
                         <div className=" bg-black p-8 h-full justify-end flex flex-col">
                             <h1 className="text-white mt-2 text-xl mb-5 transform  translate-y-20 uppercase group-hover:translate-y-0 duration-300 group-hover:text-cyan-400"> 03⏤ Windshield Wiper </h1>
-                            <p className="opacity-0 text-white text-xl group-hover:opacity-80 transform duration-500 "> Our design philosophy centers around the user. </p>
+                            <p className="opacity-0 text-white text-xl group-hover:opacity-80 transform duration-500 "> Running wiper simulations with accuracy </p>
                         </div>
                     </div>
                 </article>

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { connectBle, disconnectBle} from '../components/bluetooth'
+import { connectBle, disconnectBle} from '../components/bluetooth/core'
 import power_seat_trainer from '../assets/power_seat_trainer.webp';
 import { useNavigate } from 'react-router-dom';
 
@@ -44,17 +44,17 @@ export default function PowerSeatHome(){
                     {/* ── right column ── action buttons */}
                     <div className="flex flex-col items-center gap-8 min-w-[250px] self-center">
                     <button
-                        onClick={() => isConnected ? navigate('/data/PS') : alert('Please connect to a Bluetooth device first.')}
+                        onClick={() => navigate('/trainer/power-seat/read-data')}
                         className='inline-block w-full text-center min-w-[200px] px-6 py-8 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px'>
                         Read Live Data
                     </button>
                     <button
-                        onClick={() => isConnected ? navigate('/dtc/PS') : alert('Please connect to a Bluetooth device first.')}
+                        onClick={() => navigate('/trainer/power-seat/read-codes')}
                         className='inline-block w-full text-center min-w-[200px] px-6 py-8 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px'>
                         Read Trouble Codes
                     </button>
                     <button
-                        onClick={() => isConnected ? navigate('/clear/PS') : alert('Please connect to a Bluetooth device first.')}
+                        onClick={() => navigate('/trainer/power-seat/clear-codes')}
                         className='inline-block w-full text-center min-w-[200px] px-6 py-8 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px'>
                         Clear Trouble Codes
                     </button>

@@ -4,9 +4,12 @@ import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
 import PowerSeatHome from './pages/PowerSeatTrainer';
 import WiperWasherHome from './pages/WiperWasherTrainer';
+import TrainerActionPage from './pages/TrainerActionPage';
+
+{/* 
 import {ReadDataTrainerPS, ReadDataTrainerWW} from './pages/ReadData';
 import {ReadCodesTrainerPS, ReadCodesTrainerWW} from './pages/ReadCodes';
-import { ClearCodesTrainerPS, ClearCodesTrainerWW } from './pages/ClearCodes';
+import { ClearCodesTrainerPS, ClearCodesTrainerWW } from './pages/ClearCodes';*/}
 import { Trainers } from './pages/Trainers';
 
 function App() {
@@ -24,15 +27,18 @@ function App() {
           <Route path="power-seat" element={<PowerSeatHome />} />
           <Route path="wiper-washer" element={<WiperWasherHome />} />
 
-          {/* Nested routes for Power Seat Trainer */}
+          {/* Dynamic Route */}
+          <Route path="trainer/:trainerId/:action" element={<TrainerActionPage />} />
+
+          {/* Nested routes for Power Seat Trainer 
           <Route path="data/PS" element={<ReadDataTrainerPS />} />
           <Route path="dtc/PS" element={<ReadCodesTrainerPS />} />
           <Route path="clear/PS" element={<ClearCodesTrainerPS />} />
 
-          {/* Nested routes for Wiper Washer Trainer */}
+          {/* Nested routes for Wiper Washer Trainer 
           <Route path="data/WW" element={<ReadDataTrainerWW />} />
           <Route path="dtc/WW" element={<ReadCodesTrainerWW />} />
-          <Route path="clear/WW" element={<ClearCodesTrainerWW />} />
+          <Route path="clear/WW" element={<ClearCodesTrainerWW />} />*/}
           
         </Route>
       </Routes>

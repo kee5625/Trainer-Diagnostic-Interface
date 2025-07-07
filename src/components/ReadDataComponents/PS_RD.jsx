@@ -3,25 +3,35 @@ import ignitionSwitchImg  from '/ignition_switch.png';
 import adjusterSwitchImg  from '/adjuster_switch.png';
 import lumbarSwitchImg   from '/lumbar_switch.png';
 
-import {
-  setNotifyCallback, readAlias, subscribeAll
-} from '../bluetooth';
+import { setNotifyCallback } from '../bluetooth/core';
+import { readData, streamData } from '../bluetooth/powerSeat';
+
 
 export default function PS_RD(){
-     const [ignition, setIgnition]   = useState('OFF');
+  const [ignition, setIgnition]   = useState('OFF');
   const [adjuster, setAdjuster]   = useState('DOWN');
   const [lumbar_adjuster, setLumbarAdjuster]   = useState('OFF');
 
   /* ----- attach BLE notification handler once ----- */
   useEffect(() => {
-    setNotifyCallback((alias, value) => {
-      if (alias === 0x00) setIgnition(value ? 'ON' : 'OFF');
-      else if (alias === 0x01) setAdjuster(value ? 'UP' : 'DOWN');
+    setNotifyCallback((ascii) => {
+      console.log("[Notify]", ascii);
+
+      //parse ascii string and update state properly
+      if (ascii.includes('IGNITION')) {
+        setIgnition(ascii.includes('ON') ? 'ON' : 'OFF');
+      }
+      if (ascii.includes('ADJUSTER')) {
+        setAdjuster(ascii.includes('UP') ? 'UP' : 'DOWN');
+      }
+      if (ascii.includes('LUMBAR')) {
+        setLumbarAdjuster(ascii.includes('ON') ? 'ON' : 'OFF');
+      }
     });
   }, []);
 
-  const fetchOnce   = async () => {await readAlias(0x00);};
-  const startStream = () => subscribeAll();
+  const fetchOnce   = async () => {await readData(0x00);};
+  const startStream =  async() => {await streamData();};
 
   return (
     <div className="flex items-center flex-col justify-center">
@@ -76,7 +86,7 @@ export default function PS_RD(){
           </div>
           <div className="px-4 pb-4">
             <h6 className="mb-1 text-white text-lg font-semibold text-center">Lumbar Adjuster Switch</h6>
-            <p className="text-white text-sm text-center">Position: <strong>{ignition}</strong></p>
+            <p className="text-white text-sm text-center">Position: <strong>{lumbar_adjuster}</strong></p>
           </div>
         </div>
       </div>

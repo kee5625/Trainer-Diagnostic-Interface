@@ -1,19 +1,20 @@
 import { useState, useEffect } from 'react';
 
-import {
-  setNotifyCallback, requestDTC
-} from '../bluetooth';
+import { setNotifyCallback } from '../bluetooth/core';
+import { readCodes} from '../bluetooth/powerSeat';
 
 export default function PS_RC() {
   const [code, setCode] = useState("N/A");
 
   /* ----- attach BLE notification handler once ----- */
   useEffect(() => {
-    setNotifyCallback(setCode)
+    setNotifyCallback((ascii) => {
+      console.log("[Notify]", ascii);
+      setCode(ascii);
+    });
   }, []);
 
-  const fetchOnce   = async () => {await requestDTC();};
-  //const startStream = () => subscribeAll();
+  const fetchOnce   = async () => {await readCodes();};
 
   return (
     <div className="page">

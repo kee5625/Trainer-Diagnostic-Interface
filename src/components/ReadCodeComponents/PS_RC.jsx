@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import { setNotifyCallback } from '../bluetooth/core';
+import { setNotifyCallback, onBleState } from '../bluetooth/core';
 import { requestDTC} from '../bluetooth/powerSeat';
 
 export default function PS_RC() {
@@ -9,22 +9,32 @@ export default function PS_RC() {
   const [bCode, setBCode] = useState("N/A");
   const [uCode, setUCode] = useState("N/A");
 
+  const [ble, setBle] = useState({ connected:false, notifying:false });
+  useEffect(() => onBleState(setBle), []);
+
   /* ----- attach BLE notification handler once ----- */
   useEffect(() => {
     setNotifyCallback((ascii) => {
       console.log("[Notify]", ascii);
-      setCode(ascii);
+      setPCode(ascii);
     });
   }, []);
 
-  const fetchOnce   = async () => {await requestDTC();};
+  const fetchOnce   = async () =>{
+    if(!ble.notifying){
+      console.warn("BLE not ready");
+      return;
+    }
+    try { await requestDTC(0x00);}
+    catch(e) {console.error("[Request DTC] failed:", e);}
+  };
 
   return (
     <div className="flex items-center flex-col justify-center">
       <h1 className='text-2xl'>Diagnostic Trouble Codes</h1>
       <div className='gap-5 pb-16 flex p-5 flex-row justify-center'>
         <button 
-          className="inline-block w-full text-center text-lg min-w-[200px] px-6 py-6 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px"
+          className={`inline-block w-full text-center text-lg min-w-[200px] px-6 py-6 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px ${!ble.notifying ? 'opacity-40 cursor-not-allowed' : ''}`}
           onClick={fetchOnce}>
             Get Data
         </button>

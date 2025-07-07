@@ -1,32 +1,26 @@
-import React, { useState, useRef } from 'react';
-import { connectBle, disconnectBle} from '../components/bluetooth/core'
+import React, { useState, useRef, useEffect } from 'react';
+import { connectBle, disconnectBle, onBleState} from '../components/bluetooth/core'
 import power_seat_trainer from '../assets/power_seat_trainer.webp';
 import { useNavigate } from 'react-router-dom';
 
 export default function PowerSeatHome(){
-    const [isConnected, setIsConnected] = useState(false);
+    //const [isConnected, setIsConnected] = useState(false);
     const navigate = useNavigate();
 
-    //Event handler for connect btn
-    const handleConnect = async () => {
-        const connected = await connectBle();
-        setIsConnected(connected);
-    };
+    const [ble, setBle] = useState({connected: false, notifying: false});
 
-    //Event handler for disconnect btn
-    const handleDisconnect = async () => {
-        if(isConnected){
-            await disconnectBle();
-            setIsConnected(false);
-        }
-        else {
-            alert('No device connected.');
-        }
-    };
+    useEffect(() => onBleState(s => { console.log('BLE', s); setBle(s); }), []);
 
-    const connectionLabel = isConnected ? 'Connected' : 'Disconnected';
-    const connectionColor = isConnected ? '#35b931' : '#d13a30';
+    const handleConnect = () => connectBle();
+    const handleDisconnect = () => disconnectBle();
 
+    const connectionLabel = ble.connected ? 'Connected' : 'Disconnected';
+    const connectionColor = ble.connected ? '#35b931' : '#d13a30';
+
+    const label  = ble.connected ? (ble.notifying ? "Ready" : "Connecting…") : "Disconnected";
+    const colour = ble.connected ? (ble.notifying ? "#35b931" : "#f5a623") : "#d13a30";
+
+    useEffect(() =>  onBleState(s => { console.log("BLE", s); setBle(s); }),[]);
 
     return(
         <div className='flex items-center  justify-center'>
@@ -44,11 +38,11 @@ export default function PowerSeatHome(){
                     {/* ── right column ── action buttons */}
                     <div className="flex flex-col items-center gap-8 min-w-[250px] self-center">
                         <button
-                            onClick={() => isConnected ? handleDisconnect() : handleConnect()}
-                            className={isConnected ? "bg-gradient-to-r from-red-600 via-red-700 to-red-800 shadow-lg shadow-red-900 text-white px-6 py-4 rounded-2xl hover:shadow-red-800 hover:shadow-lg"
+                            onClick={() => ble.connected ? handleDisconnect() : handleConnect()}
+                            className={ble.connected ? "bg-gradient-to-r from-red-600 via-red-700 to-red-800 shadow-lg shadow-red-900 text-white px-6 py-4 rounded-2xl hover:shadow-red-800 hover:shadow-lg"
                             : "bg-gradient-to-r from-green-600 via-green-700 to-green-800 text-white shadow-lg shadow-green-800 font-semi px-6 py-4 rounded-2xl disabled:opacity-40 hover:shadow-lg hover:shadow-green-900"}
                             >
-                            {isConnected ? "Disconnect Bluetooth Device" : "Connect To Bluetooth Device"}
+                            {ble.connected ? "Disconnect Bluetooth Device" : "Connect To Bluetooth Device"}
                         </button>
                         <button
                             onClick={() => navigate('/trainer/power-seat/read-data')}
@@ -72,7 +66,7 @@ export default function PowerSeatHome(){
                         <div className="flex items-center gap-4">
                             <button
                                 onClick={handleConnect}
-                                disabled={isConnected}
+                                disabled={ble.connected}
                                 className="bg-gradient-to-r from-green-600 via-green-700 to-green-800 text-white shadow-lg shadow-green-800 font-semi px-6 py-4 rounded-2xl disabled:opacity-40 hover:shadow-lg hover:shadow-green-900"
                                 >
                                 Connect To Bluetooth Device

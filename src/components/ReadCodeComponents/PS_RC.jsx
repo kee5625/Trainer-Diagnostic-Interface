@@ -28,7 +28,6 @@ export default function PS_RC() {
           onClick={fetchOnce}>
             Get Data
         </button>
-        {/*<button className="actionBtn" onClick={startStream}>Stream Live</button>*/}
       </div>
       
       <div className="w-[820px] h-[300px] mx-auto relative flex flex-col text-slate-300 bg-slate-800 shadow-md rounded-lg overflow-hidden">

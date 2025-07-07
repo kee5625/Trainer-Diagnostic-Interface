@@ -63,7 +63,7 @@ export async function disconnectBle() {
 }
 
 let opChain = Promise.resolve();
-function enqueue(op) {
+export function enqueue(op) {
   opChain = opChain.then(op, op);
   return opChain;
 }

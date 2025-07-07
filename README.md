@@ -106,9 +106,9 @@ Each route (e.g., `/trainer/power-seat/read-data`) is handled by a corresponding
 ## 🔷 Notes
 
 ✅ `core.js` is kept generic and reusable.  
-✅ `powerSeat.js` / `wiperWasher.js` can optionally be used for encapsulating trainer-specific protocols.  
+✅ `powerSeat.js` / `wiperWasher.js` is to be used for encapsulating trainer-specific ble protocols.  
 ✅ Components should **only care about their trainer & action**, not BLE internals.  
-✅ Dynamic routing (`TrainerActionPage.jsx`) makes adding new trainers and actions easy.
+✅ Dynamic routing (`TrainerActionPage.jsx`) makes adding new trainers and actions organized.
 
 ---
 

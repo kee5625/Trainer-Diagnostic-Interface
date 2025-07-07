@@ -9,8 +9,8 @@ export function Trainers(){
            <div className="grid grid-cols-1 gap-5 mt-12 list-none md:grid-cols-3 lg:mt-24 max-w-5xl mx-auto" role="list">
                 <article 
                     onClick={() => navigate("/power-seat")}
-                    className="rounded-xl mx-auto shadow-xl bg-cover bg-no-repeat bg-bottom max-h-[500px] relative border-8 border-black transform duration-500 hover:-translate-y-6 group" 
-                    style={{backgroundImage: "url('/bg_power_seat.jpg')"}}>
+                    className="rounded-xl mx-auto shadow-xl bg-contain bg-no-repeat bg-top max-h-[500px] relative border-8 border-black transform duration-500 hover:-translate-y-6 group" 
+                    style={{backgroundImage: "url('/bg_power_seat.png')"}}>
                     
                     <div className="bg-black relative h-full group-hover:bg-opacity-0 max-h-[500px] flex flex-wrap flex-col pt-[21rem] hover:bg-opacity-75 transform duration-300">
                         <div className=" bg-black p-8 h-full justify-end flex flex-col">
@@ -21,7 +21,7 @@ export function Trainers(){
                 </article>
                 <article 
                     className="rounded-xl mx-auto  shadow-xl bg-cover bg-center max-h-[500px] relative border-8 border-black  transform duration-500 hover:-translate-y-6   group" 
-                    style={{backgroundImage: "url('https://i.pinimg.com/564x/3c/c2/6c/3cc26c0140c2f0dc70d8aa48416c41dc.jpg')"}}>
+                    style={{backgroundImage: "url('/bg_ac.png')"}}>
                     <div className="bg-black relative h-full group-hover:bg-opacity-0 max-h-[500px]  flex flex-wrap flex-col pt-[21rem] hover:bg-opacity-75 transform duration-300">
                         <div className=" bg-black p-8 h-full justify-end flex flex-col">
                             <h1 className="text-white mt-2 text-xl mb-5 transform  translate-y-20 uppercase group-hover:translate-y-0 duration-300 group-hover:text-indigo-400"> 02⏤ Air Conditioning </h1>
@@ -31,7 +31,7 @@ export function Trainers(){
                 </article>
                 <article 
                     className="rounded-xl mx-auto  shadow-xl bg-cover bg-center max-h-[500px] relative border-8 border-black  transform duration-500 hover:-translate-y-6   group" 
-                    style={{backgroundImage: "url('https://i.pinimg.com/564x/fa/4f/cf/fa4fcfd2db636f98eb0f2b5aecce0c28.jpg')"}}>
+                    style={{backgroundImage: "url('/bg_wiper_washer.png')"}}>
                     <div className="bg-black relative h-full group-hover:bg-opacity-0 max-h-[500px]  flex flex-wrap flex-col pt-[21rem] hover:bg-opacity-75 transform duration-300">
                         <div className=" bg-black p-8 h-full justify-end flex flex-col">
                             <h1 className="text-white mt-2 text-xl mb-5 transform  translate-y-20 uppercase group-hover:translate-y-0 duration-300 group-hover:text-cyan-400"> 03⏤ Windshield Wiper </h1>

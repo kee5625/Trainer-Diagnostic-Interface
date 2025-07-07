@@ -8,8 +8,8 @@ import {
 } from '../components/bluetooth';
 
 export default function ReadDataTrainerPS() {
-  const [ignition, setIgnition]   = useState<'ON' | 'OFF'>('OFF');
-  const [adjuster, setAdjuster]   = useState<'UP' | 'DOWN'>('DOWN');
+  const [ignition, setIgnition]   = useState('OFF');
+  const [adjuster, setAdjuster]   = useState('DOWN');
 
   /* ----- attach BLE notification handler once ----- */
   useEffect(() => {
@@ -23,11 +23,19 @@ export default function ReadDataTrainerPS() {
   const startStream = () => subscribeAll();
 
   return (
-    <div className="page">
-      <h1>Live Data</h1>
-      <div className='startBtns'>
-        <button className="actionBtn" onClick={fetchOnce}>Get Data</button>
-        <button className="actionBtn" onClick={startStream}>Stream Live</button>
+    <div className="flex items-center flex-col justify-center">
+      <h1 className='text-2xl p-5'>Live Data</h1>
+      <div className='gap-5 flex flex-row justify-center'>
+        <button 
+          className="inline-block w-full text-center text-lg min-w-[200px] px-6 py-6 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px" 
+          onClick={fetchOnce}>
+            Get Data
+        </button>
+        <button 
+          className="inline-block w-full text-center text-lg min-w-[200px] px-6 py-6 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px" 
+          onClick={startStream}>
+            Stream Live
+        </button>
       </div>
       
 

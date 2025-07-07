@@ -41,17 +41,20 @@ export default function PowerSeatHome(){
                     className="rounded-xl shadow-lg  md:w-[800px] "
                     />
 
-                    {/* ── right column ── big action buttons */}
+                    {/* ── right column ── action buttons */}
                     <div className="flex flex-col items-center gap-8 min-w-[250px] self-center">
                     <button
+                        onClick={() => isConnected ? navigate('/data/PS') : alert('Please connect to a Bluetooth device first.')}
                         className='inline-block w-full text-center min-w-[200px] px-6 py-8 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px'>
-                        Read Live Codes
+                        Read Live Data
                     </button>
                     <button
+                        onClick={() => isConnected ? navigate('/dtc/PS') : alert('Please connect to a Bluetooth device first.')}
                         className='inline-block w-full text-center min-w-[200px] px-6 py-8 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px'>
                         Read Trouble Codes
                     </button>
                     <button
+                        onClick={() => isConnected ? navigate('/clear/PS') : alert('Please connect to a Bluetooth device first.')}
                         className='inline-block w-full text-center min-w-[200px] px-6 py-8 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px'>
                         Clear Trouble Codes
                     </button>

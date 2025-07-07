@@ -60,10 +60,11 @@ It supports multiple trainers, each with options to:
 ### 🧰 BLE Service Layer
 Located in `components/bluetooth/`:
 - **`core.js`**  
-  General-purpose BLE utilities: `connectBle`, `disconnectBle`, `setNotifyCallback`, `readAlias`, `subscribeAll`, `requestDTC`, `writeCommand`.
+  General-purpose BLE utilities: `connectBle`, `disconnectBle`, `setNotifyCallback`, `writeCommand`.
 - **`powerSeat.js` and `wiperWasher.js`**  
   Abstraction for trainer-specific BLE command wrappers.  
-  If each trainer needs different command sequences or response formats, these modules encapsulate trainer logic.  
+  If each trainer needs different command sequences or response formats, these modules encapsulate trainer logic.
+  Individual ble functions are defined inside the trainer .js files.  
   If all trainers share the same BLE protocol, you can call `core.js` directly from components.
 
 ---

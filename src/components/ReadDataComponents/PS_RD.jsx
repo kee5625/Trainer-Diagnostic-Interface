@@ -4,7 +4,7 @@ import adjusterSwitchImg  from '/adjuster_switch.png';
 import lumbarSwitchImg   from '/lumbar_switch.png';
 
 import { setNotifyCallback } from '../bluetooth/core';
-import { readData, streamData } from '../bluetooth/powerSeat';
+import { readAlias, subscribeAll } from '../bluetooth/powerSeat';
 
 
 export default function PS_RD(){
@@ -30,8 +30,8 @@ export default function PS_RD(){
     });
   }, []);
 
-  const fetchOnce   = async () => {await readData(0x00);};
-  const startStream =  async() => {await streamData();};
+  const fetchOnce   = async () => {await readAlias(0x00);};
+  const startStream =  async() => {await subscribeAll();};
 
   return (
     <div className="flex items-center flex-col justify-center">

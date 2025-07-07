@@ -1,17 +1,23 @@
-import { writeCommand, requestDTC, subscribeAll, readAlias } from './core';
+import { writeCommand, enqueue } from './core';
 
-export const readData = async (alias) => {
-  await readAlias(alias);  // example command bytes
-};
+export function readAlias(alias) {
+  return enqueue(() =>
+    tx.writeCommand([0x00, alias, 0x00])
+  );
+}
 
-export const streamData = async () => {
-  await subscribeAll();
-};
+export function subscribeAll() {
+  return enqueue(() =>
+    writeCommand([0x01, 0xff, 0x00])
+  );
+}
 
-export const readCodes = async () => {
-  await requestDTC();  // example command bytes
-};
+export function requestDTC() {
+  return enqueue(() =>
+    writeCommand([0x01])
+  );
+}
 
 export const clearCodes = async () => {
-  await writeCommand([0x00, 0x02, 0x00]);  // example command bytes
+  await writeCommand([0x00, 0x02, 0x00]);
 };

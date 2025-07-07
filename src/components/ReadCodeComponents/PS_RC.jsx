@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 import { setNotifyCallback } from '../bluetooth/core';
-import { readCodes} from '../bluetooth/powerSeat';
+import { requestDTC} from '../bluetooth/powerSeat';
 
 export default function PS_RC() {
   const [code, setCode] = useState("N/A");
@@ -14,7 +14,7 @@ export default function PS_RC() {
     });
   }, []);
 
-  const fetchOnce   = async () => {await readCodes();};
+  const fetchOnce   = async () => {await requestDTC();};
 
   return (
     <div className="page">

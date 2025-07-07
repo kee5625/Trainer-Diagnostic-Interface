@@ -68,36 +68,15 @@ function enqueue(op) {
   return opChain;
 }
 
-export function readAlias(alias) {
-  if (!tx) throw new Error('BLE not ready');
-  return enqueue(() =>
-    tx.writeValueWithoutResponse(new Uint8Array([0x00, alias, 0x00]))
-  );
-}
-
-export function subscribeAll() {
-  if (!tx) throw new Error('BLE not ready');
-  return enqueue(() =>
-    tx.writeValueWithoutResponse(new Uint8Array([0x01, 0xff, 0x00]))
-  );
-}
-
 export function setNotifyCallback(cb) {
   notifyCb = cb;
 }
 
-export function requestDTC() {
+export function writeCommand(cmd) {
   if (!tx) throw new Error('BLE not ready');
   return enqueue(() =>
-    tx.writeValueWithoutResponse(new Uint8Array([0x01]))
+    tx.writeValueWithoutResponse(new Uint8Array(cmd))
   );
-}
-
-export function writeCommand(cmd){
-    if (!tx) throw new Error('BLE not ready');
-    return enqueue(() =>
-        tx.writeValueWithoutResponse(new Uint8Array(commandBytes))
-    );
 }
 
 function onNotify(e) {

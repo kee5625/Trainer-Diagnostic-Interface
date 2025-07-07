@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { connectBle, disconnectBle} from '../components/bluetooth'
+import { connectBle, disconnectBle} from '../components/bluetooth/core'
 import wiper_washer_trainer from '../assets/wiper_washer_trainer.webp';
 import { useNavigate } from 'react-router-dom';
 

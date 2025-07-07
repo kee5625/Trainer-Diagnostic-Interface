@@ -2,7 +2,7 @@ import { writeCommand, enqueue } from './core';
 
 export function readAlias(alias) {
   return enqueue(() =>
-    tx.writeCommand([0x00, alias, 0x00])
+    writeCommand([0x00, alias, 0x00])
   );
 }
 

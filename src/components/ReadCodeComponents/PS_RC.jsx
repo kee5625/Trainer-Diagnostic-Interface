@@ -9,7 +9,10 @@ export default function PS_RC() {
   const [bCode, setBCode] = useState("N/A");
   const [uCode, setUCode] = useState("N/A");
 
+  const [loading, setLoading] = useState(false);
+
   const [ble, setBle] = useState({ connected:false, notifying:false });
+
   useEffect(() => onBleState(setBle), []);
 
   /* ----- attach BLE notification handler once ----- */
@@ -25,18 +28,27 @@ export default function PS_RC() {
       console.warn("BLE not ready");
       return;
     }
+    setLoading(true);
+    await sleep(2000);  //Temporary delay for UI smoothness
+    
     try { await requestDTC(0x00);}
     catch(e) {console.error("[Request DTC] failed:", e);}
+    finally{setLoading(false);}
   };
+
+  function sleep(ms){ //Temporary sleep function for ui smoothness
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 
   return (
     <div className="flex items-center flex-col justify-center">
       <h1 className='text-2xl'>Diagnostic Trouble Codes</h1>
       <div className='gap-5 pb-16 flex p-5 flex-row justify-center'>
         <button 
-          className={`inline-block w-full text-center text-lg min-w-[200px] px-6 py-6 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px ${!ble.notifying ? 'opacity-40 cursor-not-allowed' : ''}`}
+          disabled={!ble.connected || loading}
+          className={`${!ble.notifying ? 'opacity-60 cursor-not-allowed' : ''}inline-block w-full text-center text-lg min-w-[200px] px-6 py-6 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px`}
           onClick={fetchOnce}>
-            Get Data
+            {loading ? "Analyzing..." : "Get Trouble Codes"}
         </button>
       </div>
       

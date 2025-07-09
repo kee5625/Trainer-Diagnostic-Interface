@@ -45,12 +45,19 @@ export default function PowerSeatHome(){
 
     return(
         <div className="flex justify-center items-center">
-            <div className="relative flex flex-row gap-10 bg-gradient-to-br from-slate-700/50 to-slate-900/50 backdrop-blur-lg shadow-2xl rounded-3xl min-w-[1250px] min-h-[700px]">
+            <div className="
+                    relative flex flex-row gap-10
+                    /* glass ↓ */
+                    bg-white/2 backdrop-blur-lg backdrop-saturate-150
+                    ring-1 ring-white/15
+                    shadow-2xl rounded-3xl
+                    min-w-[1250px] min-h-[700px]
+                ">
                 <div className="grid grid-cols-[1fr_300px] gap-2 items-center mx-auto max-w-[1000px] w-full">
                     {/* Left: Image & controls */}
                     <div className="flex flex-col items-center gap-4 w-[88%]">
                         {/* Image */}
-                        <div className="relative overflow-hidden py-8 rounded-xl bg-gradient-to-tr from-slate-700 to-slate-800 border border-slate-500 flex flex-col gap-2 items-center justify-center shadow-inner">
+                        <div className="relative overflow-hidden py-8 rounded-xl bg-gradient-to-tr from-slate-800 to-slate-800 border border-slate-600 flex flex-col gap-2 items-center justify-center shadow-inner">
                             <img
                                 src={power_seat_trainer}
                                 alt="Power-Seat Trainer"

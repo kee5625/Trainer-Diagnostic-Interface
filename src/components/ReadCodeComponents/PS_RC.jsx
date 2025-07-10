@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 import { onBleState } from '../bluetooth/core';
-import { requestDTC, onDtc} from '../bluetooth/powerSeat';
+import { requestDTC, onDtc, clearCodes} from '../bluetooth/powerSeat';
 
 
 export default function PS_RC() {
@@ -11,6 +11,7 @@ export default function PS_RC() {
   const [uCode, setUCode] = useState("N/A");
 
   const [loading, setLoading] = useState(false);  // used to track button loading state
+  const [clearLoading, setClearLoading] = useState(false); // used to track clear button loading state
   const [highlight, setHighlight] = useState(false); // used to highlight the fetched DTCs
 
   /* ---- Helper ---- */
@@ -48,8 +49,21 @@ export default function PS_RC() {
     finally{setLoading(false);}
   };
 
-  const clearCodes = async () => {
-
+  const ClearCodes = async () => {
+    if(!ble.notifying){
+      console.warn("BLE not ready");
+      return;
+    }
+    setClearLoading(true);
+    await sleep(2000);  //Temporary delay for UI smoothness
+    
+    try { 
+      await clearCodes(0x00);
+      setHighlight(true);
+      setTimeout(() => setHighlight(false), 1000);
+    }
+    catch(e) {console.error("[Clear Codes] failed:", e);}
+    finally{setClearLoading(false);}
   }
 
   
@@ -72,10 +86,10 @@ export default function PS_RC() {
             {loading ? "Analyzing..." : "Get Trouble Codes"}
         </button>
         <button 
-          disabled={!ble.connected || loading}
+          disabled={!ble.connected || clearLoading}
           className={`${!ble.notifying ? 'opacity-60 cursor-not-allowed' : ''}inline-block w-full text-center text-lg min-w-[200px] px-6 py-5 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px`}
-          onClick={clearCodes}>
-            {loading ? "Clearing Codes..." : "Clear Codes"}
+          onClick={ClearCodes}>
+            {clearLoading ? "Clearing Codes..." : "Clear Codes"}
         </button>
       </div>
       

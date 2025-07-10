@@ -13,6 +13,7 @@ export default function PS_RD(){
   const [lumbar,   setLumbar]   = useState('OFF');
 
   const [loading, setLoading] = useState(false);  // used to track button loading state
+  const [liveLoading, setLiveLoading] = useState(false);
   const [highlight, setHighlight] = useState(false); // used to highlight the fetched data
 
   function sleep(ms){ //Temporary sleep function for ui smoothness
@@ -43,11 +44,25 @@ export default function PS_RD(){
       setHighlight(true);
       setTimeout(() => setHighlight(false), 1000);
     }catch(error){
-      console.error("[Request Status] failed: ", e);
+      console.error("[Request Status] failed: ", error);
     }finally{setLoading(false);}
     
   };
-  const startStream =  async() => {await subscribeAll();};
+  const startStream =  async() => {
+    setLiveLoading(true);
+    await sleep(2000);
+
+    try{
+      await subscribeAll();
+      setHighlight(true);
+      setTimeout(() => setHighlight(false), 1000);
+    }catch(error){
+      console.error("[Live Data Request] failed: ", error);
+    }
+    finally{
+      setLiveLoading(false);
+    }
+  };
 
   return (
     <div className="flex items-center flex-col justify-center">
@@ -60,6 +75,13 @@ export default function PS_RD(){
           onClick={fetchOnce}
         >
           {loading ? "Analyzing..." : "Get Data"}
+        </button>
+        <button
+          disabled={!ble.connected || liveLoading}
+          className={`${!ble.notifying ? 'opacity-60 cursor-not-allowed' : ''} inline-block w-full text-center text-lg min-w-[200px] px-6 py-6 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b`}
+          onClick={startStream}
+        >
+          {liveLoading ? "Getting Data..." : "Live Stream"}
         </button>
       </div>
 

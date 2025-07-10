@@ -6,10 +6,6 @@ import PowerSeatHome from './pages/PowerSeatTrainer';
 import WiperWasherHome from './pages/WiperWasherTrainer';
 import TrainerActionPage from './pages/TrainerActionPage';
 
-{/* 
-import {ReadDataTrainerPS, ReadDataTrainerWW} from './pages/ReadData';
-import {ReadCodesTrainerPS, ReadCodesTrainerWW} from './pages/ReadCodes';
-import { ClearCodesTrainerPS, ClearCodesTrainerWW } from './pages/ClearCodes';*/}
 import { Trainers } from './pages/Trainers';
 
 function App() {

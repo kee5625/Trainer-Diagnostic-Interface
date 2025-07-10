@@ -29,16 +29,6 @@ function App() {
 
           {/* Dynamic Route */}
           <Route path="trainer/:trainerId/:action" element={<TrainerActionPage />} />
-
-          {/* Nested routes for Power Seat Trainer 
-          <Route path="data/PS" element={<ReadDataTrainerPS />} />
-          <Route path="dtc/PS" element={<ReadCodesTrainerPS />} />
-          <Route path="clear/PS" element={<ClearCodesTrainerPS />} />
-
-          {/* Nested routes for Wiper Washer Trainer 
-          <Route path="data/WW" element={<ReadDataTrainerWW />} />
-          <Route path="dtc/WW" element={<ReadCodesTrainerWW />} />
-          <Route path="clear/WW" element={<ClearCodesTrainerWW />} />*/}
           
         </Route>
       </Routes>

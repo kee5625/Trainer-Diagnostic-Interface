@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage';
 import PowerSeatHome from './pages/PowerSeatTrainer';
 import WiperWasherHome from './pages/WiperWasherTrainer';
 import TrainerActionPage from './pages/TrainerActionPage';
+import AirConditionerHome from './pages/AirConditionerTrainer';
 
 import { Trainers } from './pages/Trainers';
 
@@ -22,6 +23,7 @@ function App() {
           {/* Trainer Home Pages */}
           <Route path="power-seat" element={<PowerSeatHome />} />
           <Route path="wiper-washer" element={<WiperWasherHome />} />
+          <Route path="air-conditioner" element={<AirConditionerHome />} />
 
           {/* Dynamic Route */}
           <Route path="trainer/:trainerId/:action" element={<TrainerActionPage />} />

@@ -20,7 +20,8 @@ export function Trainers(){
                         </div>
                     </div>
                 </article>
-                <article 
+                <article
+                    onClick={() => navigate("/air-conditioner")} 
                     className="rounded-xl mx-auto  shadow-xl bg-cover bg-center max-h-[500px] relative border-8 border-black  transform duration-500 hover:-translate-y-6   group" 
                     style={{backgroundImage: "url('/bg_ac.png')"}}>
                     <div className="bg-black relative h-full group-hover:bg-opacity-0 max-h-[500px]  flex flex-wrap flex-col pt-[21rem] hover:bg-opacity-75 transform duration-300">

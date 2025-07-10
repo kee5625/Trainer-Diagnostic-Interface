@@ -3,7 +3,6 @@ import PS_RD from "../components/ReadDataComponents/PS_RD";
 import PS_RC from "../components/ReadCodeComponents/PS_RC";
 import WW_RD from "../components/ReadDataComponents/WW_RD";
 import WW_RC from "../components/ReadCodeComponents/WW_RC";
-// Similarly import other components for codes & clear codes
 
 export default function TrainerActionPage() {
   const { trainerId, action } = useParams();

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { connectBle, disconnectBle, onBleState} from '../components/bluetooth/core'
-import wiper_washer_trainer from '../assets/wiper_washer_trainer.webp';
+import ac_trainer from '../assets/ac_trainer.webp';
 import { useNavigate } from 'react-router-dom';
 
 export default function AirConditionerHome(){
@@ -51,9 +51,9 @@ export default function AirConditionerHome(){
                         {/* Image */}
                         <div className="relative overflow-hidden py-8 rounded-xl bg-gradient-to-tr from-slate-700 to-slate-800 border border-slate-500 flex flex-col gap-2 items-center justify-center shadow-inner">
                             <img
-                                src={wiper_washer_trainer}
-                                alt="Wiper-Washer Trainer"
-                                className="w-[90%] rounded-lg h-full object-contain"
+                                src={ac_trainer}
+                                alt="Air-conditioner Trainer"
+                                className="w-[60%] rounded-lg h-full object-contain"
                             />
                         
 
@@ -116,18 +116,18 @@ export default function AirConditionerHome(){
 
                     {/* Right: Description */}
                     <div className="flex flex-col justify-center text-white w-full max-w-[350px]">
-                        <h2 className="text-3xl font-bold mb-2 text-center">Air Conditioner Trainer</h2>
+                        <h2 className="text-3xl font-bold mb-4 text-center">Air Conditioner Trainer</h2>
                         <p className="text-gray-300 text-sm pb-5">
                         Simulates and diagnoses air conditioner trainer. Use the connect button to establish a Bluetooth connection and monitor live data or read/clear trouble codes.
                         </p>
                         <div className="flex flex-col w-full gap-4">
                             <button
-                                onClick={() => navigate('/trainer/wiper-washer/read-data')}
+                                onClick={() => navigate('/trainer/air-conditioner/read-data')}
                                 className='inline-block w-full text-center min-w-[200px] px-5 py-4 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px'>
                                 Read Live Data
                             </button>
                             <button
-                                onClick={() => navigate('/trainer/wiper-washer/read-codes')}
+                                onClick={() => navigate('/trainer/air-conditioner/read-codes')}
                                 className='inline-block w-full text-center min-w-[200px] px-5 py-4 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px'>
                                 Read Trouble Codes
                             </button>

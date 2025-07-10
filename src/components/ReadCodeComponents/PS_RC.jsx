@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 
-import { setNotifyCallback, onBleState } from '../bluetooth/core';
-import { requestDTC} from '../bluetooth/powerSeat';
+import { onBleState } from '../bluetooth/core';
+import { requestDTC, onDtc} from '../bluetooth/powerSeat';
+
 
 export default function PS_RC() {
   const [pCode, setPCode] = useState("N/A");
@@ -25,12 +26,10 @@ export default function PS_RC() {
   useEffect(() => onBleState(setBle), []);
 
   
-  useEffect(() => {
-    setNotifyCallback((ascii) => {
-      console.log("[Notify]", ascii);
-      setPCode(ascii);
-    });
-  }, []);
+  useEffect(() => onDtc(code => {
+    console.log("[Notify]", code);
+    setPCode(code);
+  }), []);
 
   const fetchOnce   = async () =>{
     if(!ble.notifying){
@@ -72,7 +71,7 @@ export default function PS_RC() {
       
       <div className="w-[820px] h-[300px] mx-auto relative flex flex-col text-slate-300 bg-slate-800 shadow-md rounded-lg overflow-hidden">
         <table className="w-full h-full table-fixed text-left">
-          <thead className=''> {/*Table Header*/}
+          <thead>
             <tr className="bg-slate-700">
               <th className="w-[20%] px-4 py-2 border-b border-slate-600 text-lg font-medium text-slate-200">
                 Category
@@ -86,20 +85,18 @@ export default function PS_RC() {
             </tr>
           </thead>
           <tbody className="align-middle">
-            <tr className="hover:bg-slate-700"> {/*Power Train category*/}
+            <tr className="hover:bg-slate-700">
               <td className="px-4 py-3 border-b border-slate-700 font-semibold text-slate-100">
                 P - Powertrain
               </td>
-              <td className={`px-4 py-3 border-b border-slate-700 transition-colors text-md duration-500 ${
-                highlight ? "bg-green-700 text-white" : ""
-              }`}>
+              <td className={`px-4 py-3 border-b border-slate-700 transition-colors text-md duration-500 ${highlight && "bg-green-700 text-white"}`}>
                 {pCode || "N/A"}
               </td>
               <td className="px-4 py-3 border-b border-slate-700 text-slate-300">
                 Powertrain system diagnostic trouble code description.
               </td>
             </tr>
-            <tr className="hover:bg-slate-700"> {/*Chassis category*/}
+            <tr className="hover:bg-slate-700">
               <td className="px-4 py-3 border-b border-slate-700 font-semibold text-slate-100">
                 C - Chassis
               </td>
@@ -110,7 +107,7 @@ export default function PS_RC() {
                 Chassis system diagnostic trouble code description.
               </td>
             </tr>
-            <tr className="hover:bg-slate-700"> {/*Body category*/}
+            <tr className="hover:bg-slate-700">
               <td className="px-4 py-3 border-b border-slate-700 font-semibold text-slate-100">
                 B - Body
               </td>
@@ -121,7 +118,7 @@ export default function PS_RC() {
                 Body system diagnostic trouble code description.
               </td>
             </tr>
-            <tr className="hover:bg-slate-700">{/*Network category*/}
+            <tr className="hover:bg-slate-700">
               <td className="px-4 py-3 font-semibold text-slate-100">
                 U - Network
               </td>

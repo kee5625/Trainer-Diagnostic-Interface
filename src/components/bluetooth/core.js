@@ -1,79 +1,117 @@
-let device = null;
-let server = null;
-let tx = null;
-let rx = null;
+// ─────────────────────────────────────────────────────────────────────────────
+// Generic BLE helper (multi-subscriber notify queue)
+// ─────────────────────────────────────────────────────────────────────────────
+let device   = null;
+let server   = null;
+let tx       = null;
+let rx       = null;
 
-let notifyCb = () => {};
-
-const SERVICE_UUID = '0000abcd-0000-1000-8000-00805f9b34fb';
-const CHAR_UUID_TX = '0000ab01-0000-1000-8000-00805f9b34fb';
-const CHAR_UUID_RX = '0000ab02-0000-1000-8000-00805f9b34fb';
-const GAP_NAME_PREF = 'Trainer-';
-
-const listeners = new Set();
+/* -------- state fan-out -------- */
+const bleListeners = new Set();
+let bleState = { connected: false, notifying: false };
 function publishState(s) {
-  bleState = {...s};                         // remember latest
-  listeners.forEach(l => l({...s}));
+  bleState = { ...s };
+  bleListeners.forEach(l => l({ ...s }));
 }
-let bleState = { connected:false, notifying:false };
-
 export function onBleState(cb) {
-  cb(bleState);                         // <─ immediate replay
-  listeners.add(cb);  
-  return () => listeners.delete(cb);
+  cb(bleState);               // replay immediately
+  bleListeners.add(cb);
+  return () => bleListeners.delete(cb);
 }
+
+/* -------- notify fan-out -------- */
+const notifySubs = new Set();
+export function onBleNotify(fn) {
+  notifySubs.add(fn);
+  return () => notifySubs.delete(fn);
+}
+/* Back-compat single-callback setter (used by legacy code) */
+export function setNotifyCallback(cb) {
+  notifySubs.clear();
+  notifySubs.add(cb);
+}
+
+/* -------------------------------------------------------------------------- */
+const SERVICE_UUID   = '0000abcd-0000-1000-8000-00805f9b34fb';
+const CHAR_UUID_TX   = '0000ab01-0000-1000-8000-00805f9b34fb';
+const CHAR_UUID_RX   = '0000ab02-0000-1000-8000-00805f9b34fb';
+const GAP_NAME_PREF  = 'Trainer-';
 
 async function startNotifyWithRetry(ch) {
-  const transient = ["NotSupportedError", "InvalidStateError", "NetworkError"];
-  let tries = 0;
-  while (true) {
+  const transient = ['NotSupportedError', 'InvalidStateError', 'NetworkError'];
+  let attempt = 0;
+  for (;;) {
     try {
-      console.log("startNotifications → try", ++tries);
+      console.log('startNotifications attempt', ++attempt);
       await ch.startNotifications();
-      console.log("startNotifications → SUCCESS");
-      return;                       // success
-    } catch (err) {
-      console.warn("startNotifications →", err.name);
-      if (!(err instanceof DOMException) || !transient.includes(err.name))
-        throw err;                  // fatal → bubble out
-      await new Promise(r => setTimeout(r, 100));   // retry
+      return;
+    } catch (e) {
+      if (
+        !(e instanceof DOMException) ||
+        !transient.includes(e.name)
+      )
+        throw e;                         // non-transient → bubble
+      await new Promise(r => setTimeout(r, 100));
     }
   }
 }
 
+/* ── Connect ──────────────────────────────────────────────────────────────── */
 export async function connectBle() {
   try {
     device = await navigator.bluetooth.requestDevice({
       filters: [{ namePrefix: GAP_NAME_PREF }],
       optionalServices: [SERVICE_UUID],
     });
-    
+
     device.addEventListener('gattserverdisconnected', () => {
       clearRefs();
       publishState({ connected: false, notifying: false });
     });
 
     server = device.gatt.connected ? device.gatt : await device.gatt.connect();
-    
     const svc = await server.getPrimaryService(SERVICE_UUID);
-
     tx = await svc.getCharacteristic(CHAR_UUID_TX);
     rx = await svc.getCharacteristic(CHAR_UUID_RX);
 
-    publishState({ connected: true, notifying: false});
+    publishState({ connected: true, notifying: false });
 
     await startNotifyWithRetry(rx);
     rx.addEventListener('characteristicvaluechanged', onNotify);
-
     publishState({ connected: true, notifying: true });
-    console.log('Device Connected');
+
+    console.log('BLE connected');
     return true;
   } catch (e) {
-    console.error("[BLE] connect failed:", e);
+    console.error('[BLE] connect failed', e);
     clearRefs();
     publishState({ connected: false, notifying: false });
     return false;
   }
+}
+
+/* ── Disconnect ──────────────────────────────────────────────────────────── */
+export async function disconnectBle() {
+  if (!device) {
+    publishState({ connected: false, notifying: false });
+    return;
+  }
+  if (!device.gatt?.connected) {
+    clearRefs();
+    publishState({ connected: false, notifying: false });
+    return;
+  }
+  await new Promise(res => {
+    const target = device;
+    const done = () => {
+      target && target.removeEventListener('gattserverdisconnected', done);
+      res();
+    };
+    target.addEventListener('gattserverdisconnected', done, { once: true });
+    target.gatt.disconnect();
+  });
+  clearRefs();
+  publishState({ connected: false, notifying: false });
 }
 
 function clearRefs() {
@@ -81,55 +119,29 @@ function clearRefs() {
   device = server = tx = rx = null;
 }
 
-export async function disconnectBle() {
-  const d = device;
-  if (!d){
-    publishState({ connected: false, notifying: false });
-    return;
-  }
-
-  if (!d.gatt?.connected) {
-    clearRefs();
-    publishState({ connected: false, notifying: false });
-    return;
-  }
-
-  await new Promise((resolve) => {
-    const done = () => {
-      d.removeEventListener('gattserverdisconnected', done);
-      resolve();
-    };
-    d.addEventListener('gattserverdisconnected', done, { once: true });
-    d.gatt.disconnect();
-    console.log('Device Disconnected');
-  });
-
-  clearRefs();
-  publishState({ connected: false, notifying: false });
-}
-
+/* ── Write queue (prevents overlapped writes) ─────────────────────────────── */
 let opChain = Promise.resolve();
 export function enqueue(op) {
   opChain = opChain.then(op, op);
   return opChain;
 }
-
-export function setNotifyCallback(cb) {
-  notifyCb = cb;
-}
-
-export function writeCommand(cmd) {
+export function writeCommand(bytes) {
   if (!tx) throw new Error('BLE not ready');
-  return enqueue(() =>{
-    console.log("TX →", cmd.map(b => "0x"+b.toString(16).padStart(2,"0")));
-    return tx.writeValueWithoutResponse(new Uint8Array(cmd));
+  return enqueue(() => {
+    console.log(
+      'TX →',
+      bytes.map(b => '0x' + b.toString(16).padStart(2, '0'))
+    );
+    return tx.writeValueWithoutResponse(new Uint8Array(bytes));
   });
 }
 
+/* ── Internal notify handler (raw bytes) ──────────────────────────────────── */
 function onNotify(e) {
-  const v = e.target.value;
-  const ascii = new TextDecoder().decode(
-    new Uint8Array(v.buffer, v.byteOffset, v.byteLength)
-  ).trim();
-  notifyCb?.(ascii);
+  const raw = new Uint8Array(
+    e.target.value.buffer,
+    e.target.value.byteOffset,
+    e.target.value.byteLength
+  );
+  notifySubs.forEach(cb => cb(raw));
 }

@@ -13,13 +13,11 @@ export default function TrainerActionPage() {
   if (trainerId === "power-seat") {
     if (action === "read-data") ComponentToRender = <PS_RD />;
     else if (action === "read-codes") ComponentToRender = <PS_RC />;
-    else if (action === "clear-codes") ComponentToRender = <div></div>;
   }
 
   if (trainerId === "wiper-washer") {
     if (action === "read-data") ComponentToRender = <WW_RD />;
     else if (action === "read-codes") ComponentToRender = <WW_RC />;
-    else if (action === "clear-codes") ComponentToRender = <div></div>;
   }
 
   if (!ComponentToRender) {

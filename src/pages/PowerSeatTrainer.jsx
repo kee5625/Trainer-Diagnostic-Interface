@@ -139,11 +139,6 @@ export default function PowerSeatHome(){
                                 className='inline-block w-full text-center min-w-[200px] px-5 py-4 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px'>
                                 Read Trouble Codes
                             </button>
-                            <button
-                                onClick={() => navigate('/trainer/power-seat/clear-codes')}
-                                className='inline-block w-full text-center min-w-[200px] px-5 py-4 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px'>
-                                Clear Trouble Codes
-                            </button>
                         </div>
                     </div>
                 </div>

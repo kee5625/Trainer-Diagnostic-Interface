@@ -48,6 +48,10 @@ export default function PS_RC() {
     finally{setLoading(false);}
   };
 
+  const clearCodes = async () => {
+
+  }
+
   
 
   return (
@@ -66,6 +70,12 @@ export default function PS_RC() {
           className={`${!ble.notifying ? 'opacity-60 cursor-not-allowed' : ''}inline-block w-full text-center text-lg min-w-[200px] px-6 py-5 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px`}
           onClick={fetchOnce}>
             {loading ? "Analyzing..." : "Get Trouble Codes"}
+        </button>
+        <button 
+          disabled={!ble.connected || loading}
+          className={`${!ble.notifying ? 'opacity-60 cursor-not-allowed' : ''}inline-block w-full text-center text-lg min-w-[200px] px-6 py-5 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px`}
+          onClick={clearCodes}>
+            {loading ? "Clearing Codes..." : "Clear Codes"}
         </button>
       </div>
       

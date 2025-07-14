@@ -4,7 +4,6 @@ This project is a **React-based web application** to simulate and interact with 
 It supports multiple trainers, each with options to:
 - Read Live Data
 - Read Diagnostic Trouble Codes (DTC)
-- Clear Trouble Codes
 
 ---
 
@@ -42,7 +41,6 @@ It supports multiple trainers, each with options to:
 │           WW_RD.jsx
 │
 └───pages
-        ClearCodes.jsx
         HomePage.jsx
         PowerSeatTrainer.jsx
         ReadCodes.jsx
@@ -114,7 +112,7 @@ Each route (e.g., `/trainer/power-seat/read-data`) is handled by a corresponding
 
 ## 📄 Future Enhancements
 
-- Implement `wiperWasher.js` trainer-specific BLE logic.
-- Add global connection state using React Context.
+- Modularize all components by implementing a backend and using a DB
+- Protect routes and actions by adding guardrails to all interactions
 
 ---

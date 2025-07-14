@@ -26,7 +26,7 @@ export function onSeatStatus(cb){
         const [flags, dir] = raw;
         cb({
             ignition: !!(flags & 1),
-            lumbar: !!(flags & 2),
+            lumbar: ['NEUTRAL', 'UP', 'DOWN', 'LEFT', 'RIGHT'][dir] ?? "UNKNOWN",
             seat: ['NEUTRAL', 'UP', 'DOWN', 'LEFT', 'RIGHT'][dir] ?? "UNKNOWN",
         });
     });

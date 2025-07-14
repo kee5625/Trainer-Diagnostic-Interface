@@ -10,7 +10,7 @@ import { onBleState } from '../bluetooth/core';
 export default function PS_RD(){
   const [ignition, setIgnition] = useState('OFF');
   const [adjuster, setAdjuster] = useState('NEUTRAL');
-  const [lumbar,   setLumbar]   = useState('OFF');
+  const [lumbar,   setLumbar]   = useState('NEUTRAL');
 
   const [loading, setLoading] = useState(false);  // used to track button loading state
   const [liveLoading, setLiveLoading] = useState(false);
@@ -29,7 +29,7 @@ export default function PS_RD(){
     //  onSeatStatus gives you { ignition:Boolean, lumbar:Boolean, seat:String }
     const unsubscribe = onSeatStatus(({ ignition, lumbar, seat }) => {
       setIgnition(ignition ? 'ON' : 'OFF');
-      setLumbar(lumbar ? 'ON' : 'OFF');
+      setLumbar(lumbar);
       setAdjuster(seat);                // "UP" | "DOWN" | "LEFT" | "RIGHT" | "NEUTRAL"
     });
     return unsubscribe;                 // clean-up when component unmounts
@@ -98,7 +98,7 @@ export default function PS_RD(){
 
         {/* Lumbar ------------------------------------------------------ */}
         <Card img={lumbarSwitchImg} title="Lumbar Adjuster Switch" highlight={highlight}>
-          Status:&nbsp;<strong>{lumbar}</strong>
+          Position:&nbsp;<strong>{lumbar}</strong>
         </Card>
       </div>
     </div>

@@ -1,13 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import Header from '../components/Header';
 
 export function Trainers(){
     const navigate = useNavigate();
 
     return(
-        <div>
-            <h1 className='flex justify-center items-center mb-4 text-3xl font-semibold leading-none tracking-tight  text-white '>Choose your trainer:</h1>
-            <div className="grid grid-cols-1 gap-5 mt-12 list-none md:grid-cols-3 lg:mt-24 max-w-5xl mx-auto" role="list">
+        <div className='row-start-2 flex justify-end flex-col'>
+            <h1 className='flex justify-center items-center text-3xl pt-24 font-semibold leading-none tracking-tight  text-white '>Choose your trainer:</h1>
+            <div className="grid grid-cols-1 gap-5 list-none md:grid-cols-3 mt-8 max-w-5xl mx-auto" role="list">
                 <article 
                     onClick={() => navigate("/power-seat")}
                     className="rounded-xl mx-auto shadow-xl bg-contain bg-no-repeat bg-top max-h-[500px] relative border-8 border-black transform duration-500 hover:-translate-y-6 group" 

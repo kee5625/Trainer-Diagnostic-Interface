@@ -65,7 +65,7 @@ export default function PS_RD(){
   };
 
   return (
-    <div className="flex items-center flex-col justify-center">
+    <div className="pt-16 flex items-center flex-col justify-center">
       <h1 className="text-2xl">Live Data</h1>
 
       <div className="gap-5 flex p-5 flex-row justify-center">
@@ -108,7 +108,7 @@ export default function PS_RD(){
 function Card({ img, title, children, highlight }) {
  
   return (
-    <div className="flex flex-col items-center justify-center my-6 bg-slate-700 shadow-lg border border-slate-600 rounded-xl w-[300px]">
+    <div className="h-full flex flex-col items-center justify-center my-6 bg-slate-700 shadow-lg border border-slate-600 rounded-xl w-[300px]">
       <div className="relative w-[80%] aspect-square m-4 bg-gradient-to-tr from-slate-600 to-slate-800 rounded-lg border border-slate-500 flex items-center justify-center shadow-inner">
         <img src={img} alt={title} className="object-contain w-3/4 h-3/4" />
       </div>

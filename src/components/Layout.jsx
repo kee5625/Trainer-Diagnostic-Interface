@@ -1,4 +1,5 @@
 import { Outlet } from "react-router-dom";
+import Header from "./Header";
 
 function Layout() {
   return (
@@ -10,9 +11,13 @@ function Layout() {
                  radial-gradient(at 7% 88%, #0c1b1d 0px, transparent 50%), 
                #000000`,
     }} 
-    className="min-h-screen  text-white font-sans antialiased flex items-center justify-center p-4">
-      <div className="flex flex-col md:flex-row max-w-7xl mx-auto px-6 py-16 gap-10">
-        <Outlet />
+    className="min-h-screen text-white font-sans antialiased flex flex-col">
+      <div className="flex-1 flex flex-col max-w-7xl w-full mx-auto">
+        <div className='grid grid-rows-[auto_1fr] h-full'>
+          <Header className="row-start-1"/>
+          <Outlet className="row-start-2 w-full h-full flex justify-end items-center"/>
+        </div>
+        
       </div>
     </div>
   );

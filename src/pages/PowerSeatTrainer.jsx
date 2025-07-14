@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { connectBle, disconnectBle, onBleState} from '../components/bluetooth/core'
 import power_seat_trainer from '../assets/power_seat_trainer.webp';
 import { useNavigate } from 'react-router-dom';
+import Header from '../components/Header';
 
 export default function PowerSeatHome(){
     //const [isConnected, setIsConnected] = useState(false);
@@ -44,14 +45,13 @@ export default function PowerSeatHome(){
     }
 
     return(
-        <div className="flex justify-center items-center">
+        <div className="row-start-2 w-full h-full flex justify-end items-center">
             <div className="
                     relative flex flex-row gap-10
-                    /* glass ↓ */
                     bg-white/2 backdrop-blur-lg backdrop-saturate-150
                     ring-1 ring-white/15
                     shadow-2xl rounded-3xl
-                    min-w-[1250px] min-h-[700px]
+                    min-w-[1250px] w-full min-h-[700px] h-full
                 ">
                 <div className="grid grid-cols-[1fr_300px] gap-2 items-center mx-auto max-w-[1000px] w-full">
                     {/* Left: Image & controls */}

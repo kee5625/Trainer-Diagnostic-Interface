@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { connectBle, disconnectBle, onBleState} from '../components/bluetooth/core'
 import ac_trainer from '../assets/ac_trainer.webp';
 import { useNavigate } from 'react-router-dom';
+import Header from '../components/Header';
 
 export default function AirConditionerHome(){
     const navigate = useNavigate();
@@ -43,7 +44,7 @@ export default function AirConditionerHome(){
     }
 
     return(
-        <div className="flex justify-center items-center">
+        <div className="w-full h-full flex justify-end items-center">
             <div className="relative flex flex-row gap-10 bg-gradient-to-br from-slate-700/50 to-slate-900/50 backdrop-blur-lg shadow-2xl rounded-3xl min-w-[1250px] min-h-[700px]">
                 <div className="grid grid-cols-[1fr_300px] gap-2 items-center mx-auto max-w-[1000px] w-full">
                     {/* Left: Image & controls */}
@@ -136,6 +137,5 @@ export default function AirConditionerHome(){
                 </div>
             </div>  
         </div>
-        
     )
 }

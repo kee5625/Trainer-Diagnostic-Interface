@@ -87,7 +87,7 @@ export default function PS_RC() {
   
 
   return (
-    <div className="flex items-center flex-col justify-center">
+    <div className="pt-16 flex items-center flex-col justify-center">
       <div className='flex flex-col items-center justify-center max-w-[600px]'>
         <h1 className='text-4xl font-semibold p-5'>Diagnostic Trouble Codes</h1>
         <p className='text-slate-300 text-center '>

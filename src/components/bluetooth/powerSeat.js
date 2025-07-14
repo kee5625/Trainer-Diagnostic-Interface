@@ -8,6 +8,8 @@ export const requestDTC   = (alias)      => writeCommand([0x00, alias, 0x00]);
 
 export const clearCodes   = ()      => writeCommand([0x00, 0x02, 0x00]);
 
+export const fetchFrozen = () => writeCommand([]);
+
 export const requestStatus = () => writeCommand([0x10]); //byte code for requesting data
 
 // (A) receive 5-byte ASCII DTC -> string "P0304"

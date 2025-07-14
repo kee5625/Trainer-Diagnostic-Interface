@@ -1,7 +1,10 @@
 import { Outlet } from "react-router-dom";
 import Header from "./Header";
+import { useState } from "react";
+import Modal from "./Modal";
 
 function Layout() {
+  const [showModal, setShowModal] = useState(false);
   return (
     <div
     style={{
@@ -14,11 +17,16 @@ function Layout() {
     className="min-h-screen text-white font-sans antialiased flex flex-col">
       <div className="flex-1 flex flex-col max-w-7xl w-full mx-auto">
         <div className='grid grid-rows-[auto_1fr] h-full'>
-          <Header className="row-start-1"/>
+          <Header setShowModal={setShowModal} className="row-start-1"/>
           <Outlet className="row-start-2 w-full h-full flex justify-end items-center"/>
         </div>
         
       </div>
+
+      {showModal && (
+        <Modal />
+      )}
+
     </div>
   );
 }

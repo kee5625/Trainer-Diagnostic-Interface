@@ -38,8 +38,6 @@ export default function PowerSeatHome(){
     const label  = ble.connected ? (ble.notifying ? "Ready" : "Connecting…") : "Disconnected";
     const colour = ble.connected ? (ble.notifying ? "#35b931" : "#f5a623") : "#d13a30";
 
-    useEffect(() =>  onBleState(s => { console.log("BLE", s); setBle(s); }),[]);
-
     function sleep(ms){
         return new Promise(resolve => setTimeout(resolve, ms));
     }

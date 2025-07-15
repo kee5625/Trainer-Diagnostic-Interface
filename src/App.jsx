@@ -6,7 +6,6 @@ import PowerSeatHome from './pages/PowerSeatTrainer';
 import WiperWasherHome from './pages/WiperWasherTrainer';
 import TrainerActionPage from './pages/TrainerActionPage';
 import AirConditionerHome from './pages/AirConditionerTrainer';
-
 import { Trainers } from './pages/Trainers';
 
 function App() {

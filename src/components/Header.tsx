@@ -49,7 +49,7 @@ export default function Header({setShowModal}) {
                     Trainers
                 </button>
                 <button 
-                    onClick={() => handleCleanup(null)}
+                    onClick={() => handleCleanup("/help")}
                     className="text-lg text-white">
                     Help
                 </button>

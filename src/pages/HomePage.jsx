@@ -3,7 +3,7 @@ import AtechLogo from '/atechlogo.webp';
 
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom';
-import { disconnectBle } from '../components/bluetooth';
+import { disconnectBle } from '../components/bluetooth/core';
 import Header from '../components/Header';
 
 

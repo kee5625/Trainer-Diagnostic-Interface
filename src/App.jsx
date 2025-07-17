@@ -7,6 +7,7 @@ import WiperWasherHome from './pages/WiperWasherTrainer';
 import TrainerActionPage from './pages/TrainerActionPage';
 import AirConditionerHome from './pages/AirConditionerTrainer';
 import { Trainers } from './pages/Trainers';
+import Help from './components/Help';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route element={<Layout />}>
           <Route index element={<HomePage />} />
           <Route path="*" element={<h2 className="text-center text-red-500">Page Not Found</h2>} />
+          <Route path='help' element={<Help />} />
 
           {/* Trainers page */}
           <Route path='trainers' element={<Trainers />} />

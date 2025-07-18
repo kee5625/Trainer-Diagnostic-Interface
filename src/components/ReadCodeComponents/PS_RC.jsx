@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
 
 import { onBleState } from '../bluetooth/core';
-import { requestDTC, onDtc, clearCodes, fetchFrozen} from '../bluetooth/powerSeat';
+import { requestDTC, onDtc, clearCodes, CMD_PENDING, CMD_STORED, CMD_PERM} from '../bluetooth/powerSeat';
+import { useNavigate } from 'react-router-dom';
 
 
 export default function PS_RC() {
-  const [pCode, setPCode] = useState("N/A");
-  const [cCode, setCCode] = useState("N/A");
-  const [bCode, setBCode] = useState("N/A");
-  const [uCode, setUCode] = useState("N/A");
+  const [codes, setCodes] = useState([]);
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);  // used to track button loading state
   const [clearLoading, setClearLoading] = useState(false); // used to track clear button loading state
   const [frozenLoading, setFrozenLoading] = useState(false); // used to track clear button loading state
+  const [permanentLoading, setPermanentLoading] = useState(false);
   const [highlight, setHighlight] = useState(false); // used to highlight the fetched DTCs
 
   /* ---- Helper ---- */
@@ -27,11 +27,10 @@ export default function PS_RC() {
 
   useEffect(() => onBleState(setBle), []);
 
-  
-  useEffect(() => onDtc(code => {
-    console.log("[Notify]", code);
-    setPCode(code);
-  }), []);
+  useEffect(() => onDtc(({cleared, list}) => {
+    if(cleared) setCodes([]);
+    else setCodes(list);
+  }),[]);
 
   const fetchOnce   = async () =>{
     if(!ble.notifying){
@@ -42,7 +41,7 @@ export default function PS_RC() {
     await sleep(2000);  //Temporary delay for UI smoothness
     
     try { 
-      await requestDTC(0x00);
+      await requestDTC();
       setHighlight(true);
       setTimeout(() => setHighlight(false), 1000);
     }
@@ -59,7 +58,7 @@ export default function PS_RC() {
     await sleep(2000);  //Temporary delay for UI smoothness
     
     try { 
-      await clearCodes(0x00);
+      await clearCodes();
       setHighlight(true);
       setTimeout(() => setHighlight(false), 1000);
     }
@@ -67,29 +66,61 @@ export default function PS_RC() {
     finally{setClearLoading(false);}
   }
 
-  const FetchFrozen = async () => {
-    if(!ble.notifying){
-      console.warn("BLE not ready");
-      return;
-    }
+  const fetchStored = async () => {
+    if (!ble.notifying) return;
     setFrozenLoading(true);
-    await sleep(2000);  //Temporary delay for UI smoothness
-    
-    try { 
-      await fetchFrozen(0x00);
+    await sleep(2000);
+    try {
+      await requestDTC(CMD_STORED);
       setHighlight(true);
       setTimeout(() => setHighlight(false), 1000);
-    }
-    catch(e) {console.error("[Clear Codes] failed:", e);}
-    finally{setFrozenLoading(false);}
-  }
+    } catch (e) { console.error("[Request Stored] failed:", e); }
+    finally { setFrozenLoading(false); }
+  };
 
-  
+  const fetchPending = async () => {
+    if (!ble.notifying) return;
+    setLoading(true);
+    await sleep(2000);
+    try {
+      await requestDTC(CMD_PENDING);
+      setHighlight(true);
+      setTimeout(() => setHighlight(false), 1000);
+    } catch (e) { console.error("[Request Pending] failed:", e); }
+    finally { setLoading(false); }
+  };
+
+  const fetchPermanent = async () => {
+    if (!ble.notifying) return;
+    setPermanentLoading(true);
+    await sleep(2000);
+    try {
+      await requestDTC(CMD_PERM);
+      setHighlight(true);
+      setTimeout(() => setHighlight(false), 1000);
+    } catch (e) { console.error("[Request Permanent] failed:", e); }
+    finally { setPermanentLoading(false); }
+  };
 
   return (
     <div className="pt-16 flex items-center flex-col justify-center">
       <div className='flex flex-col items-center justify-center max-w-[600px]'>
-        <h1 className='text-4xl font-semibold p-5'>Diagnostic Trouble Codes</h1>
+        <div className='flex flex-row gap-2 items-center'>
+          <button onClick={() => navigate("/power-seat")} className=''>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              className='w-9 h-9'
+            >
+              <path
+                fill="currentColor"
+                d="M21 11H6.83l3.58-3.59L9 6l-6 6l6 6l1.41-1.41L6.83 13H21z"
+              ></path>
+            </svg>
+          </button>
+          
+          <h1 className='text-4xl font-semibold p-5'>Diagnostic Trouble Codes</h1>
+        </div>
         <p className='text-slate-300 text-center '>
           A DTC or a Diagnostic Trouble Code, also known as OBDII codes, are your car's system for alerting you of vehicle issues.
           This page here can be used to get these trouble codes that are active or stored in the trainer.
@@ -100,14 +131,20 @@ export default function PS_RC() {
         <button 
           disabled={!ble.connected || loading}
           className={`${!ble.notifying ? 'opacity-60 cursor-not-allowed' : ''}inline-block w-full text-center text-lg min-w-[200px] px-6 py-5 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px`}
-          onClick={fetchOnce}>
+          onClick={fetchPending}>
             {loading ? "Analyzing..." : "Get Trouble Codes"}
         </button>
         <button 
           disabled={!ble.connected || frozenLoading}
           className={`${!ble.notifying ? 'opacity-60 cursor-not-allowed' : ''}inline-block w-full text-center text-lg min-w-[200px] px-6 py-5 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px`}
-          onClick={FetchFrozen}>
-            {clearLoading ? "Fetching Codes..." : "Show Frozen Codes"}
+          onClick={fetchStored}>
+            {frozenLoading ? "Fetching Codes..." : "Show Frozen Codes"}
+        </button>
+        <button 
+          disabled={!ble.connected || permanentLoading}
+          className={`${!ble.notifying ? 'opacity-60 cursor-not-allowed' : ''}inline-block w-full text-center text-lg min-w-[200px] px-6 py-5 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px`}
+          onClick={fetchPermanent}>
+            {permanentLoading ? "Fetching Permanent..." : "Show Permanent Codes"}
         </button>
         <button 
           disabled={!ble.connected || clearLoading}
@@ -115,7 +152,6 @@ export default function PS_RC() {
           onClick={ClearCodes}>
             {clearLoading ? "Clearing Codes..." : "Clear Codes"}
         </button>
-        
       </div>
       
       <div className="w-[820px] h-[300px] mx-auto relative flex flex-col text-slate-300 bg-slate-800 shadow-md rounded-lg overflow-hidden">
@@ -133,51 +169,27 @@ export default function PS_RC() {
               </th>
             </tr>
           </thead>
-          <tbody className="align-middle">
-            <tr className="hover:bg-slate-700">
-              <td className="px-4 py-3 border-b border-slate-700 font-semibold text-slate-100">
-                P - Powertrain
-              </td>
-              <td className={`px-4 py-3 border-b border-slate-700 transition-colors text-md duration-500 ${highlight && "bg-green-700 text-white"}`}>
-                {pCode || "N/A"}
-              </td>
-              <td className="px-4 py-3 border-b border-slate-700 text-slate-300">
-                Powertrain system diagnostic trouble code description.
-              </td>
-            </tr>
-            <tr className="hover:bg-slate-700">
-              <td className="px-4 py-3 border-b border-slate-700 font-semibold text-slate-100">
-                C - Chassis
-              </td>
-              <td className="px-4 py-3 border-b border-slate-700">
-                {cCode}
-              </td>
-              <td className="px-4 py-3 border-b border-slate-700 text-slate-300">
-                Chassis system diagnostic trouble code description.
-              </td>
-            </tr>
-            <tr className="hover:bg-slate-700">
-              <td className="px-4 py-3 border-b border-slate-700 font-semibold text-slate-100">
-                B - Body
-              </td>
-              <td className="px-4 py-3 border-b border-slate-700">
-                {bCode}
-              </td>
-              <td className="px-4 py-3 border-b border-slate-700 text-slate-300">
-                Body system diagnostic trouble code description.
-              </td>
-            </tr>
-            <tr className="hover:bg-slate-700">
-              <td className="px-4 py-3 font-semibold text-slate-100">
-                U - Network
-              </td>
-              <td className="px-4 py-3">
-                {uCode}
-              </td>
-              <td className="px-4 py-3 text-slate-300">
-                Network communication diagnostic trouble code description.
-              </td>
-            </tr>
+         <tbody className="align-middle">
+            {codes.length === 0 && (
+              <tr>
+                <td colSpan={3} className="text-center py-6 text-slate-400">
+                  {ble.connected ? "No codes present" : "Not connected"}
+                </td>
+              </tr>
+            )}
+            {codes.map((c,i) => (
+              <tr key={i} className="hover:bg-slate-700">
+                <td className="px-4 py-3 border-b border-slate-700 font-semibold text-slate-100">
+                  {c[0]} {/* category letter */}
+                </td>
+                <td className={`px-4 py-3 border-b border-slate-700 transition-colors duration-500 ${highlight && "bg-green-700 text-white"}`}>
+                  {c}
+                </td>
+                <td className="px-4 py-3 border-b border-slate-700 text-slate-300">
+                  Diagnostic trouble-code description.
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

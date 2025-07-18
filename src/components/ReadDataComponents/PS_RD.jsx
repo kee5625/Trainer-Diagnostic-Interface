@@ -3,11 +3,14 @@ import ignitionSwitchImg  from '/ignition_switch.png';
 import adjusterSwitchImg  from '/adjuster_switch.png';
 import lumbarSwitchImg   from '/lumbar_switch.png';
 
-import { requestStatus, onSeatStatus, subscribeAll } from '../bluetooth/powerSeat';
+import {  onSeatStatus } from '../bluetooth/powerSeat';
 import { onBleState } from '../bluetooth/core';
+import { useNavigate } from 'react-router-dom';
 
 
 export default function PS_RD(){
+
+  const navigate = useNavigate();
   const [ignition, setIgnition] = useState('OFF');
   const [adjuster, setAdjuster] = useState('NEUTRAL');
   const [lumbar,   setLumbar]   = useState('NEUTRAL');
@@ -66,8 +69,22 @@ export default function PS_RD(){
 
   return (
     <div className="pt-16 flex items-center flex-col justify-center">
-      <h1 className="text-2xl">Live Data</h1>
-
+      <div className='flex flex-row gap-5 items-center'>
+        <button onClick={() => navigate("/power-seat")} className=''>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            className='w-9 h-9'
+          >
+            <path
+              fill="currentColor"
+              d="M21 11H6.83l3.58-3.59L9 6l-6 6l6 6l1.41-1.41L6.83 13H21z"
+            ></path>
+          </svg>
+        </button>
+        <h1 className="text-4xl">Live Data</h1>
+      </div>
+      
       <div className="gap-5 flex p-5 flex-row justify-center">
         <button
           disabled={!ble.connected || loading}

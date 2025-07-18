@@ -1,24 +1,49 @@
-import { writeCommand, setNotifyCallback, onBleNotify } from './core';
+import { writeCommand, onBleNotify } from "./core";
 
-export const readAlias = (alias) => writeCommand([0x00, alias, 0x00]);
+export const CMD_PENDING = 0x01;
+export const CMD_STORED = 0x02;
+export const CMD_PERM = 0x03;
+export const CMD_CLEAR = 0x04;
 
-export const subscribeAll = ()      => writeCommand([0x01, 0xff, 0x00]);
+export const requestDTC = (cmd = CMD_PENDING) => writeCommand([cmd]);
+export const clearCodes = () => writeCommand([CMD_CLEAR]);
 
-export const requestDTC   = (alias)      => writeCommand([0x00, alias, 0x00]);
+/* DTC helper: */
+function decodeDtc(hi, lo){
+    const sys = ['P', 'C', 'B', 'U'][hi >> 6];
+    const dig1 = ((hi >> 4) & 0x03).toString(16).toUpperCase();
+    const dig2 = (hi & 0x0F).toString(16).toUpperCase();
+    const dig3 = (lo >> 4).toString(16).toUpperCase();
+    const dig4 = (lo & 0x0F).toString(16).toUpperCase();
+    return sys + dig1 +dig2 + dig3 + dig4;
+}
 
-export const clearCodes   = ()      => writeCommand([0x00, 0x02, 0x00]);
-
-export const fetchFrozen = () => writeCommand([]);
-
-export const requestStatus = () => writeCommand([0x10]); //byte code for requesting data
-
-// (A) receive 5-byte ASCII DTC -> string "P0304"
+/* notifcation fan-out */
 export function onDtc(cb){
+    let buf = []; //running list
     return onBleNotify(raw => {
-        if(raw.length !== 5) return;
-        cb(new TextDecoder().decode(raw).trim());
+        /* 0xCC means "clear done" */
+        if(raw.length === 1 && raw[0] === 0xCC){
+            buf = [];
+            cb({cleared: true, list:[]});
+            return;
+        }
+
+        if(raw.length % 2) return;  // malformed → ignore
+        const list = [];
+        for(let i = 0; i < raw.length; i+=2){
+            buf.push(decodeDtc(raw[i], raw[i+1]));
+        }
+
+        //last chunk is <20 B ->flush
+        if (raw.length < 20) {
+            cb({ cleared: false, list: buf });
+            buf = [];
+        }
+
     });
 }
+
 
 // (B) receive 2-byte seat status 
 export function onSeatStatus(cb){
@@ -31,5 +56,3 @@ export function onSeatStatus(cb){
         });
     });
 }
-
-export const setNotifyCallbackCompat = setNotifyCallback;

@@ -44,7 +44,6 @@ export function onDtc(cb){
     });
 }
 
-
 // (B) receive 2-byte seat status 
 export function onSeatStatus(cb){
     return onBleNotify(raw => {

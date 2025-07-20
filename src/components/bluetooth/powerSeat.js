@@ -8,6 +8,7 @@ export const CMD_CLEAR = 0x04;
 export const requestDTC = (cmd = CMD_PENDING) => writeCommand([cmd]);
 export const clearCodes = () => writeCommand([CMD_CLEAR]);
 
+
 /* DTC helper: */
 function decodeDtc(hi, lo){
     const sys = ['P', 'C', 'B', 'U'][hi >> 6];

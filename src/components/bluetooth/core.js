@@ -13,6 +13,7 @@ function publishState(s) {
   bleState = { ...s };
   bleListeners.forEach(l => l({ ...s }));
 }
+
 export function onBleState(cb) {
   cb(bleState);               // replay immediately
   bleListeners.add(cb);

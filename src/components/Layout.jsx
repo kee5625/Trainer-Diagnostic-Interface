@@ -18,7 +18,9 @@ function Layout() {
       <div className="flex-1 flex flex-col max-w-7xl w-full mx-auto">
         <div className='grid grid-rows-[auto_1fr] h-full'>
           <Header setShowModal={setShowModal} className="row-start-1"/>
-          <Outlet className="row-start-2 w-full h-full flex justify-end items-center"/>
+          <div className="row-start-2 w-full h-full flex justify-center items-center">
+            <Outlet />
+          </div>
         </div>
         
       </div>

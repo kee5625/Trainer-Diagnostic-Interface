@@ -126,7 +126,7 @@ export default function PS_RC() {
           This page here can be used to get these trouble codes that are active or stored in the trainer.
         </p>
       </div>
-      
+    
       <div className='gap-5 pt-10 flex p-6 flex-row justify-center'>
         <button 
           disabled={!ble.connected || loading}
@@ -154,7 +154,7 @@ export default function PS_RC() {
         </button>
       </div>
       
-      <div className="w-[820px] h-[300px] mx-auto relative flex flex-col text-slate-300 bg-slate-800 shadow-md rounded-lg overflow-hidden">
+      <div className="w-[70%] h-[300px] mx-auto relative flex flex-col text-slate-300 bg-slate-800 shadow-md rounded-lg overflow-hidden">
         <table className="w-full h-full table-fixed text-left">
           <thead>
             <tr className="bg-slate-700">

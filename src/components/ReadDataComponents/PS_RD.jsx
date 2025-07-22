@@ -3,7 +3,7 @@ import ignitionSwitchImg  from '/ignition_switch.png';
 import adjusterSwitchImg  from '/adjuster_switch.png';
 import lumbarSwitchImg   from '/lumbar_switch.png';
 
-import {  onSeatStatus } from '../bluetooth/powerSeat';
+import {requestStatus, subscribeAll, onSeatStatus } from '../bluetooth/powerSeat';
 import { onBleState } from '../bluetooth/core';
 import { useNavigate } from 'react-router-dom';
 
@@ -51,6 +51,8 @@ export default function PS_RD(){
     }finally{setLoading(false);}
     
   };
+
+  
   const startStream =  async() => {
     setLiveLoading(true);
     await sleep(2000);

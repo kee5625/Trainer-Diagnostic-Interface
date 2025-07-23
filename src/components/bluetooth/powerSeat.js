@@ -55,19 +55,23 @@ export function onDtc(cb){
 }
 
 // (B) receive 2-byte seat status 
+let seatState = { ignition:false, seat:'NEUTRAL', lumbar:'NEUTRAL' };
+
 export function onSeatStatus(cb){
-    let state = { ignition:false, seat:'NEUTRAL', lumbar:'NEUTRAL' };
     return onBleNotify(raw => {
-        if (raw.length !== 2 || raw[0] < 0xA0) return;
-        const [pid, val] = raw;
-        switch (pid) {
-            case 0xA0: state.ignition = !!val;           break;
-            case 0xA1: state.seat     = DIR[val] ?? '?'; break;
-            case 0xA2: state.lumbar   = DIR[val] ?? '?'; break;
+        for (let i = 0; i < raw.length - 1; i += 2) {
+            const pid = raw[i], val = raw[i+1];
+            switch (pid) {
+                case 0xA0: seatState.ignition = !!val;           break;
+                case 0xA1: seatState.seat     = DIR[val] ?? '?'; break;
+                case 0xA2: seatState.lumbar   = DIR[val] ?? '?'; break;
+            }
         }
-        cb({...state}); //emit copy for React to see the change
+        cb({...seatState});
     });
 }
+
+
 
 
 export function subscribeAll(period = 500) {

@@ -1,17 +1,34 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import { onBleState } from '../bluetooth/core';
 import { requestDTC, onDtc, clearCodes, CMD_PENDING, CMD_STORED, CMD_PERM} from '../bluetooth/powerSeat';
 import { useNavigate } from 'react-router-dom';
 
+const CATEGORY_NAMES = {
+  pending: 'Pending',
+  stored: 'Stored',
+  permanent: 'Permanent'
+}
+
+
 
 export default function PS_RC() {
+  const [dtc, setDtc] = useState({
+    pending: [],
+    stored: [],
+    permanent: []
+  });
+
+  const lastCategoryRef = useRef('pending');
+
+  const [currentCategory, setCurrentCategory] = useState('pending');
+
   const [codes, setCodes] = useState([]);
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);  // used to track button loading state
   const [clearLoading, setClearLoading] = useState(false); // used to track clear button loading state
-  const [frozenLoading, setFrozenLoading] = useState(false); // used to track clear button loading state
+  const [storedLoading, setStoredLoading] = useState(false); // used to track stored button loading state
   const [permanentLoading, setPermanentLoading] = useState(false);
   const [highlight, setHighlight] = useState(false); // used to highlight the fetched DTCs
 
@@ -27,26 +44,41 @@ export default function PS_RC() {
 
   useEffect(() => onBleState(setBle), []);
 
-  useEffect(() => onDtc(({cleared, list}) => {
-    if(cleared) setCodes([]);
-    else setCodes(list);
-  }),[]);
+  useEffect(() => {
+    return onDtc(({ cleared, list }) => {
+      setDtc(prev => {
+        const cat = lastCategoryRef.current;
+        if (cleared) return { ...prev, [cat]: [] };
+        else return { ...prev, [cat]: list };
+      });
+    });
+  }, []);
 
-  const fetchOnce   = async () =>{
-    if(!ble.notifying){
+  useEffect(() => {
+    setCodes(dtc[currentCategory] || []);
+  }, [dtc, currentCategory]);
+
+  // helper to drive any of the 3 fetch buttons
+  const fetchCategory = async(cmd, category, setLoader) => {
+    if(!ble.notifying) {
       console.warn("BLE not ready");
       return;
     }
-    setLoading(true);
-    await sleep(2000);  //Temporary delay for UI smoothness
-    
-    try { 
-      await requestDTC();
+    lastCategoryRef.current = category;
+    setCurrentCategory(category);
+    setCodes([]);
+    setLoader(true);
+    try{
+      await requestDTC(cmd);
       setHighlight(true);
       setTimeout(() => setHighlight(false), 1000);
     }
-    catch(e) {console.error("[Request DTC] failed:", e);}
-    finally{setLoading(false);}
+    catch(e) {
+      console.error(`[Request ${category}] failed:`, e);
+    }
+    finally {
+      setLoader(false);
+    }
   };
 
   const ClearCodes = async () => {
@@ -55,7 +87,7 @@ export default function PS_RC() {
       return;
     }
     setClearLoading(true);
-    await sleep(2000);  //Temporary delay for UI smoothness
+    //await sleep(2000);  //Temporary delay for UI smoothness
     
     try { 
       await clearCodes();
@@ -66,41 +98,12 @@ export default function PS_RC() {
     finally{setClearLoading(false);}
   }
 
-  const fetchStored = async () => {
-    if (!ble.notifying) return;
-    setFrozenLoading(true);
-    await sleep(2000);
-    try {
-      await requestDTC(CMD_STORED);
-      setHighlight(true);
-      setTimeout(() => setHighlight(false), 1000);
-    } catch (e) { console.error("[Request Stored] failed:", e); }
-    finally { setFrozenLoading(false); }
-  };
+  const fetchStored = () => fetchCategory(CMD_STORED, 'stored', setStoredLoading);
 
-  const fetchPending = async () => {
-    if (!ble.notifying) return;
-    setLoading(true);
-    await sleep(2000);
-    try {
-      await requestDTC(CMD_PENDING);
-      setHighlight(true);
-      setTimeout(() => setHighlight(false), 1000);
-    } catch (e) { console.error("[Request Pending] failed:", e); }
-    finally { setLoading(false); }
-  };
+  const fetchPending = () => fetchCategory(CMD_PENDING, 'pending', setLoading);
 
-  const fetchPermanent = async () => {
-    if (!ble.notifying) return;
-    setPermanentLoading(true);
-    await sleep(2000);
-    try {
-      await requestDTC(CMD_PERM);
-      setHighlight(true);
-      setTimeout(() => setHighlight(false), 1000);
-    } catch (e) { console.error("[Request Permanent] failed:", e); }
-    finally { setPermanentLoading(false); }
-  };
+  const fetchPermanent = () => fetchCategory(CMD_PERM, 'permanent', setPermanentLoading);
+
 
   return (
     <div className="pt-16 flex items-center flex-col justify-center">
@@ -135,10 +138,10 @@ export default function PS_RC() {
             {loading ? "Analyzing..." : "Get Trouble Codes"}
         </button>
         <button 
-          disabled={!ble.connected || frozenLoading}
+          disabled={!ble.connected || storedLoading}
           className={`${!ble.notifying ? 'opacity-60 cursor-not-allowed' : ''}inline-block w-full text-center text-lg min-w-[200px] px-6 py-5 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px`}
           onClick={fetchStored}>
-            {frozenLoading ? "Fetching Codes..." : "Show Frozen Codes"}
+            {storedLoading ? "Fetching Codes..." : "Show Stored Codes"}
         </button>
         <button 
           disabled={!ble.connected || permanentLoading}
@@ -154,7 +157,7 @@ export default function PS_RC() {
         </button>
       </div>
       
-      <div className="w-[70%] h-[300px] mx-auto relative flex flex-col text-slate-300 bg-slate-800 shadow-md rounded-lg overflow-hidden">
+      <div className="w-[70%] h-[300px] mx-auto relative flex flex-col text-slate-300 bg-slate-800 shadow-md rounded-lg overflow-y-auto">
         <table className="w-full h-full table-fixed text-left">
           <thead>
             <tr className="bg-slate-700">

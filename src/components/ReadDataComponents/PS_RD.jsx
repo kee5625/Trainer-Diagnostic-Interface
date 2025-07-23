@@ -133,7 +133,7 @@ function Card({ img, title, children, highlight }) {
       </div>
       <div className="px-4 pb-4">
         <h6 className="mb-1 text-white text-lg font-semibold text-center">{title}</h6>
-        <p className={`${highlight ? "bg-green-700 text-white" : ""}text-white text-sm text-center`}>{children}</p>
+        <p className={`${highlight ? "bg-green-700 text-white" : ""}text-white text-sm text-center rounded-xl py-2 w-full`}>{children}</p>
       </div>
     </div>
   );

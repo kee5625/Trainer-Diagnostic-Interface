@@ -141,10 +141,10 @@ export default function Help() {
         <div className="space-y-8">
           {/* Contact Info */}
           <div className="bg-white/5 backdrop-blur-sm border-white/10 p-6 rounded-xl space-y-6">
-            <h1 className="text-white text-2xl">Contact Information</h1>
+            <div className="flex items-center flex-col pt-5 gap-2 px-5"><h1 className="text-white text-2xl">Contact Information</h1>
             <p className="text-gray-300">
               Reach out to us through any of these channels.
-            </p>
+            </p></div>
 
             <div className="space-y-4">
               <ContactItem
@@ -172,7 +172,7 @@ export default function Help() {
           </div>
 
           {/* Social Media */}
-          <div className="bg-white/5 backdrop-blur-sm border-white/10 p-6 rounded-xl space-y-4 flex flex-col justify-center items-center">
+          <div className="bg-white/5 backdrop-blur-sm border-white/10 p-6 rounded-xl space-y-3 flex flex-col justify-center items-center">
             <h1 className="text-white text-2xl">Follow Us</h1>
             <p className="text-gray-300">Stay connected on social media.</p>
             <div className="flex space-x-4">

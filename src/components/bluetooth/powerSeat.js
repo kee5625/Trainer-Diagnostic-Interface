@@ -13,7 +13,6 @@ export const requestStatus = () => writeCommand([CMD_STATUS]);
 export function requestLiveToggle() {
     // send toggle on or off cmd
     writeCommand([CMD_LIVE_TOGGLE]);
-
     return () => writeCommand([CMD_LIVE_TOGGLE]);
 }
 

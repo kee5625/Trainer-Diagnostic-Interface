@@ -3,7 +3,7 @@ import ignitionSwitchImg  from '/ignition_switch.png';
 import adjusterSwitchImg  from '/adjuster_switch.png';
 import lumbarSwitchImg   from '/lumbar_switch.png';
 
-import {requestStatus, subscribeAll, onSeatStatus } from '../bluetooth/powerSeat';
+import {requestStatus, onSeatStatus, requestLiveToggle } from '../bluetooth/powerSeat';
 import { onBleState } from '../bluetooth/core';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 export default function PS_RD(){
 
   const navigate = useNavigate();
+  const [stopStream, setStopStream] = useState(null);
   const [ignition, setIgnition] = useState('OFF');
   const [adjuster, setAdjuster] = useState('NEUTRAL');
   const [lumbar,   setLumbar]   = useState('NEUTRAL');
@@ -38,12 +39,22 @@ export default function PS_RD(){
     return unsubscribe;                 // clean-up when component unmounts
   }, []);
 
-  const fetchOnce   = async () => {
-    setLoading(true);
-    await sleep(2000);
+  useEffect(() => {
+    return () => {
+      if (stopStream) stopStream();
+    };
+  }, [stopStream]);
 
+  const fetchOnce   = async () => {
+    if(!ble.notifying) {
+      console.warn("BLE not ready - cannot fetch live data");
+      return;
+    }
+
+    setLoading(true);
     try{
       await requestStatus();
+      //flash the cards
       setHighlight(true);
       setTimeout(() => setHighlight(false), 1000);
     }catch(error){
@@ -55,17 +66,17 @@ export default function PS_RD(){
   
   const startStream =  async() => {
     setLiveLoading(true);
-    await sleep(2000);
+    const unsub = requestLiveToggle();
+    setStopStream(() => unsub);
+    setLiveLoading(false);
+  };
 
-    try{
-      await subscribeAll();
-      setHighlight(true);
-      setTimeout(() => setHighlight(false), 1000);
-    }catch(error){
-      console.error("[Live Data Request] failed: ", error);
-    }
-    finally{
-      setLiveLoading(false);
+  // add a button to stop live data stream
+  const stopStreamHandler = () => {
+    if (stopStream) {
+      // call the fn we got back — sends 0x06 again
+      stopStream();
+      setStopStream(null);
     }
   };
 
@@ -89,19 +100,23 @@ export default function PS_RD(){
       
       <div className="gap-5 flex p-5 flex-row justify-center">
         <button
-          disabled={!ble.connected || loading}
+          disabled={!ble.connected }
           className={`${!ble.notifying ? 'opacity-60 cursor-not-allowed' : ''} inline-block w-full text-center text-lg min-w-[200px] px-6 py-6 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b`}
           onClick={fetchOnce}
         >
           {loading ? "Analyzing..." : "Get Data"}
         </button>
         <button
-          disabled={!ble.connected || liveLoading}
+          disabled={!ble.connected}
           className={`${!ble.notifying ? 'opacity-60 cursor-not-allowed' : ''} inline-block w-full text-center text-lg min-w-[200px] px-6 py-6 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b`}
           onClick={startStream}
         >
           {liveLoading ? "Getting Data..." : "Live Stream"}
         </button>
+        {stopStream && (
+          <button onClick={stopStreamHandler} className="inline-block w-full text-center text-lg min-w-[200px] px-6 py-6 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b">
+            Stop Stream</button>
+        )}
       </div>
 
       <div className="grid grid-cols-3 gap-10">

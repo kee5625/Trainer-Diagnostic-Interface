@@ -65,9 +65,12 @@ export default function PS_RC() {
       return;
     }
     lastCategoryRef.current = category;
-    setCurrentCategory(category);
     setCodes([]);
     setLoader(true);
+    await sleep(1000);
+    setCurrentCategory(category);
+    
+    
     try{
       await requestDTC(cmd);
       setHighlight(true);
@@ -87,7 +90,7 @@ export default function PS_RC() {
       return;
     }
     setClearLoading(true);
-    //await sleep(2000);  //Temporary delay for UI smoothness
+    await sleep(2000);  //Temporary delay for UI smoothness
     
     try { 
       await clearCodes();

@@ -60,45 +60,42 @@ export default function PS_RC() {
 
   // helper to drive any of the 3 fetch buttons
   const fetchCategory = async(cmd, category, setLoader) => {
-    if(!ble.notifying) {
+    if (!ble.notifying) {
       console.warn("BLE not ready");
       return;
     }
     lastCategoryRef.current = category;
-    setCodes([]);
+    setCurrentCategory(category);    // switch tabs immediately
+    setCodes([]);                    // clear old list
     setLoader(true);
-    await sleep(1000);
-    setCurrentCategory(category);
-    
-    
-    try{
-      await requestDTC(cmd);
+
+    try {
+      await requestDTC(cmd);         // ask the ESP32 over BLE
       setHighlight(true);
       setTimeout(() => setHighlight(false), 1000);
-    }
-    catch(e) {
+    } catch (e) {
       console.error(`[Request ${category}] failed:`, e);
-    }
-    finally {
+    } finally {
       setLoader(false);
     }
   };
 
   const ClearCodes = async () => {
-    if(!ble.notifying){
+    if (!ble.notifying) {
       console.warn("BLE not ready");
       return;
     }
     setClearLoading(true);
-    await sleep(2000);  //Temporary delay for UI smoothness
-    
-    try { 
-      await clearCodes();
+
+    try {
+      await clearCodes();           // send 0x04 over BLE
       setHighlight(true);
       setTimeout(() => setHighlight(false), 1000);
+    } catch (e) {
+      console.error("[Clear Codes] failed:", e);
+    } finally {
+      setClearLoading(false);
     }
-    catch(e) {console.error("[Clear Codes] failed:", e);}
-    finally{setClearLoading(false);}
   }
 
   const fetchStored = () => fetchCategory(CMD_STORED, 'stored', setStoredLoading);

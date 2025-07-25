@@ -16,7 +16,7 @@ export function requestLiveToggle() {
     return () => writeCommand([CMD_LIVE_TOGGLE]);
 }
 
-/*  PIDs sent by the ESP32 (see TWAI_OBD.h)
+/*  PIDs sent by the ESP32 (see TWAI_OBD.h in gateway code)
  *    0xA0  ignition   (0/1)
  *    0xA1  adjuster   (0-4  → dir text)
  *    0xA2  lumbar     (0-4  → dir text)

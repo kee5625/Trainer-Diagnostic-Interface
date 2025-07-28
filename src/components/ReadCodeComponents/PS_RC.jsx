@@ -176,7 +176,7 @@ export default function PS_RC() {
               </th>
             </tr>
           </thead>
-         <tbody className="align-middle">
+          <tbody className="align-middle">
             {codes.length === 0 && (
               <tr>
                 <td colSpan={3} className="text-center py-6 text-slate-400">

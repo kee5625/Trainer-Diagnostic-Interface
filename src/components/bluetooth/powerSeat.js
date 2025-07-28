@@ -5,15 +5,21 @@ export const CMD_STORED = 0x02;
 export const CMD_PERM = 0x03;
 export const CMD_CLEAR = 0x04;
 export const CMD_STATUS = 0x05;
-export const CMD_LIVE_TOGGLE = 0x06;
+export const CMD_LIVE_START  = 0x06;
+export const CMD_LIVE_STOP   = 0x07;
 
 export const requestDTC = (cmd = CMD_PENDING) => writeCommand([cmd]);
 export const clearCodes = () => writeCommand([CMD_CLEAR]);
 export const requestStatus = () => writeCommand([CMD_STATUS]);
-export function requestLiveToggle() {
-    // send toggle on or off cmd
-    writeCommand([CMD_LIVE_TOGGLE]);
-    return () => writeCommand([CMD_LIVE_TOGGLE]);
+
+
+export function requestLiveStart() {
+    // send toggle on 
+    return writeCommand([CMD_LIVE_START]);
+}
+
+export function requestLiveStop() {
+    return writeCommand([CMD_LIVE_STOP]);
 }
 
 /*  PIDs sent by the ESP32 (see TWAI_OBD.h in gateway code)

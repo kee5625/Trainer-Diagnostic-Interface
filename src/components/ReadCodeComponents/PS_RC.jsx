@@ -3,14 +3,14 @@ import { useState, useEffect, useRef } from 'react';
 import { onBleState } from '../bluetooth/core';
 import { requestDTC, onDtc, clearCodes, CMD_PENDING, CMD_STORED, CMD_PERM} from '../bluetooth/powerSeat';
 import { useNavigate } from 'react-router-dom';
+import definitions from "../../data/dtcDefinitions.json";
+
 
 const CATEGORY_NAMES = {
   pending: 'Pending',
   stored: 'Stored',
   permanent: 'Permanent'
 }
-
-
 
 export default function PS_RC() {
   const [dtc, setDtc] = useState({
@@ -36,6 +36,10 @@ export default function PS_RC() {
   
   function sleep(ms){ //Temporary sleep function for ui smoothness
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  function getDtcDescription(code) {
+    return definitions[code] || 'Description not available';
   }
 
   /* -----  BLE related ----- */
@@ -189,7 +193,7 @@ export default function PS_RC() {
                   {c}
                 </td>
                 <td className="px-4 py-3 border-b border-slate-700 text-slate-300">
-                  Diagnostic trouble-code description.
+                  {getDtcDescription(c)}
                 </td>
               </tr>
             ))}

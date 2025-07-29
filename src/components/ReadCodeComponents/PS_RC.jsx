@@ -136,7 +136,7 @@ export default function PS_RC() {
     
       <div className='gap-5 pt-10 flex p-6 flex-row justify-center'>
         <button 
-          disabled={!ble.connected || loading}
+          disabled={!ble.notifying || loading}
           className={`${!ble.notifying ? 'opacity-60 cursor-not-allowed' : ''}inline-block w-full text-center text-lg min-w-[200px] px-6 py-5 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px`}
           onClick={fetchPending}>
             {loading ? "Analyzing..." : "Get Trouble Codes"}

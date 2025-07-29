@@ -40,7 +40,7 @@ export default function Help() {
   };
 
   return (
-    <div className="flex-1 px-6 py-2">
+    <div className="flex-1 px-6 py-1">
       {/* Header Section */}
       <div className="text-center mb-8">
         <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">

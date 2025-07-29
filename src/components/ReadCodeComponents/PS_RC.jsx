@@ -110,7 +110,7 @@ export default function PS_RC() {
 
 
   return (
-    <div className="pt-16 flex items-center flex-col justify-center">
+    <div className="flex items-center flex-col justify-center">
       <div className='flex flex-col items-center justify-center max-w-[600px]'>
         <div className='flex flex-row gap-2 items-center'>
           <button onClick={() => navigate("/power-seat")} className=''>

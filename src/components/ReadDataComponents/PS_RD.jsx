@@ -118,7 +118,7 @@ export default function PS_RD(){
   }, [streaming]);
 
   return (
-    <div className="pt-16 flex items-center flex-col justify-center">
+    <div className="flex items-center flex-col justify-center">
       <div className='flex flex-row gap-5 items-center'>
         <button onClick={() => navigate("/power-seat")} className=''>
           <svg

@@ -1,13 +1,15 @@
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import { disconnectBle, onBleState } from "./bluetooth/core";
 import { useEffect, useState } from "react";
 
 
 export default function Header({setShowModal}) {
     const navigate =useNavigate();
-     const [ble, setBle] = useState({connected: false, notifying: false});
+    const location = useLocation();
+    const [ble, setBle] = useState({connected: false, notifying: false});
+    const [currentTab, setCurrentTab] = useState("home");
 
-    const handleCleanup = async (path) => {
+    const handleCleanup = async (path, tabName) => {
         try{
             if(ble.connected){
                 setShowModal(true);
@@ -15,7 +17,10 @@ export default function Header({setShowModal}) {
                 await disconnectBle();
                 console.log("Disconnected ble DEVICEEEE");
             }
-            if(path) navigate(path);
+            if(path) {
+                navigate(path);
+                setCurrentTab(tabName);
+            }
         }catch(e){
             console.log("error disconnecting ble: ", e)
         }finally{
@@ -30,6 +35,21 @@ export default function Header({setShowModal}) {
         };
     }, []);
 
+    useEffect(() => {
+        // Set current tab based on current route
+        const path = location.pathname;
+        if (path === "/") {
+            setCurrentTab("home");
+        } else if (path === "/trainers") {
+            setCurrentTab("trainers");
+        } else if (path === "/help") {
+            setCurrentTab("help");
+        } else {
+            // For other routes (like trainer pages), don't highlight any nav tab
+            setCurrentTab("");
+        }
+    }, [location.pathname]);
+
     function sleep(ms){ //Temporary sleep function for ui smoothness
         return new Promise(resolve => setTimeout(resolve, ms));
     }
@@ -39,18 +59,30 @@ export default function Header({setShowModal}) {
             <a href='https://www.atechtraining.com/' target='blank'><img src="../atechlogo.webp" className="w-32"/></a>
             <div className="flex items-center gap-10">
                 <button 
-                    onClick={() => handleCleanup("/")}
-                    className="text-lg text-white">
+                    onClick={() => handleCleanup("/", "home")}
+                    className={`text-lg transition-colors duration-200 ${
+                        currentTab === "home" 
+                            ? "text-blue-500 font-semibold border-b-2 border-blue-500 pb-1" 
+                            : "text-white hover:text-blue-300"
+                    }`}>
                     Home
                 </button>
                 <button 
-                    onClick={()=> handleCleanup("/trainers")}
-                    className="text-lg text-white">
+                    onClick={()=> handleCleanup("/trainers", "trainers")}
+                    className={`text-lg transition-colors duration-200 ${
+                        currentTab === "trainers" 
+                            ? "text-blue-500 font-semibold border-b-2 border-blue-500 pb-1" 
+                            : "text-white hover:text-blue-300"
+                    }`}>
                     Trainers
                 </button>
                 <button 
-                    onClick={() => handleCleanup("/help")}
-                    className="text-lg text-white">
+                    onClick={() => handleCleanup("/help", "help")}
+                    className={`text-lg transition-colors duration-200 ${
+                        currentTab === "help" 
+                            ? "text-blue-500 font-semibold border-b-2 border-blue-500 pb-1" 
+                            : "text-white hover:text-blue-300"
+                    }`}>
                     Help
                 </button>
             </div>

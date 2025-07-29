@@ -1,10 +1,8 @@
 // src/pages/home/HomePage.tsx
-import AtechLogo from '/atechlogo.webp';
 
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { disconnectBle } from '../components/bluetooth/core';
-import Header from '../components/Header';
 
 
 function HomePage (){
@@ -14,7 +12,7 @@ function HomePage (){
   
   const navigate = useNavigate();
   return (
-    <div className="row-start-2 flex items-center justify-end min-h-[500px] flex-col px-4">
+    <div className="row-start-2 flex items-center justify-center min-h-[500px] flex-col h-full px-4">
         {/*<a href="https://www.atechtraining.com/" target="_blank" rel="noreferrer">
           <img src={AtechLogo} className="" alt="Atech logo" />
         </a>*/}

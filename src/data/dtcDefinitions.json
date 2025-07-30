@@ -1,5 +1,6 @@
 {
     "P01C1": "Fuel rail Pressure Sensor High - Bank 2",
+    "P01C0": "Fuel rail Pressure Sensor Low - Bank 2",
     "P02C0": "Restricted fuel injector for cylinder 10",
     "C33C1": "Open or high-resistance in ECM B+ supply"
 }

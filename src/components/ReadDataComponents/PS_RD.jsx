@@ -3,119 +3,120 @@ import ignitionSwitchImg  from '/ignition_switch.png';
 import adjusterSwitchImg  from '/adjuster_switch.png';
 import lumbarSwitchImg   from '/lumbar_switch.png';
 
+import { pidMeta, getDecoder } from '../../data/pidDecoder';
+
 import {requestStatus, onSeatStatus, requestLiveStop, requestLiveStart } from '../bluetooth/powerSeat';
-import { onBleState } from '../bluetooth/core';
+import { onBleNotify, onBleState } from '../bluetooth/core';
 import { useNavigate } from 'react-router-dom';
+
+const FALLBACK_NAME = pid => `0x${pid.toString(16).toUpperCase().padStart(2,'0')}` // In case PID LIbrary doesnt have a description
 
 
 export default function PS_RD(){
-
   const navigate = useNavigate();
+
+  // BLE State
+  const [ble, setBle] = useState({ connected:false, notifying:false });
+  useEffect(() => onBleState(setBle), []);
+
+  // UI Flags
   const [streaming, setStreaming] = useState(false);
   const [ignition, setIgnition] = useState('OFF');
   const [adjuster, setAdjuster] = useState('NEUTRAL');
   const [lumbar,   setLumbar]   = useState('NEUTRAL');
-
   const [loading, setLoading] = useState(false);  // used to track button loading state
-  const [liveLoading, setLiveLoading] = useState(false);
   const [highlight, setHighlight] = useState(false); // used to highlight the fetched data
 
-  const [pidData, setPidData] = useState({});
-
-  const PID_NAMES = {
-    0xA0: 'Ignition Switch',
-    0xA1: 'Seat Adjuster',
-    0xA2: 'Lumbar Adjuster',
-  };
-
+  // List of PIDS (first 0x00 frame)
+  const [supportedPids, setSupportedPids] = useState([]);
+  const [pidData, setPidData] = useState({})  //latest raw‐value map
   
+  //helper function for ui smoothness
   function sleep(ms){ //Temporary sleep function for ui smoothness
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  const [ble, setBle] = useState({ connected:false, notifying:false });
-
-  useEffect(() => onBleState(setBle), []);
-
-  /* ----- attach BLE notification handler once ----- */
+  /* ----- BLE notification handler ----- */
   useEffect(() => {
-    //  onSeatStatus gives you { ignition:Boolean, lumbar:Boolean, seat:String }
-    // const unsubscribe = onSeatStatus(({ ignition, lumbar, seat }) => {
-    //   setIgnition(ignition ? 'ON' : 'OFF');
-    //   setLumbar(lumbar);
-    //   setAdjuster(seat);                // "UP" | "DOWN" | "LEFT" | "RIGHT" | "NEUTRAL"
-    // });
-    // return unsubscribe;                 // clean-up when component unmounts
-
-    const unsub = onSeatStatus(raw => {
-      setPidData(prev => {
-        const next = {...prev};
-        for (let i = 0; i < raw.length; i+= 2){
-          next[raw[i]] = raw[i+1];
-        }
-        return next;
-      });
-      
-      // flash on one-shot
-      if (!streaming) {
-        setHighlight(true);
-        setTimeout(() => setHighlight(false), 800);
+    const unsub = onBleNotify(raw => {
+      // --- 1) Bitmask comes in as [0x00, B0, B1, ..., B27] ---
+      if (raw[0] === 0x00 && raw.length === 1 + 7*4) {
+        const maskBytes = raw.slice(1)              // 28 bytes
+        const pids = []
+        // For each byte, for each bit, if set then that PID is supported
+        maskBytes.forEach((b, i) => {
+          for (let bit = 0; bit < 8; bit++) {
+            if (b & (1 << (7 - bit))) {
+              // byte index i covers PIDs i*8+1 … i*8+8
+              pids.push(i*8 + bit + 1)
+            }
+          }
+        })
+        setSupportedPids(pids)
+        return
       }
-    });
-    
-    return unsub;
-  }, []);
 
-  const fetchOnce   = async () => {
-    if(!ble.notifying) {
-      console.warn("BLE not ready - cannot fetch live data");
-      return;
-    }
+      // --- 2) Otherwise this is a PID/value frame: [PID, val, PID, val, ...] ---
+      setPidData(prev => {
+        const next = { ...prev }
+        for (let i = 0; i < raw.length; i += 2) {
+          const pid = raw[i]
+          const val = raw[i+1]
+          next[pid] = [val]
+        }
+        return next
+      })
 
-    setLoading(true);
-    try{
-      await requestStatus();
-    }catch(error){
-      console.error("[Request Status] failed: ", error);
-    }finally{setLoading(false);}
-    
-  };
+      // flash highlight for one‐shot
+      if (!streaming) {
+        setHighlight(true)
+        setTimeout(() => setHighlight(false), 800)
+      }
+    })
 
+    return unsub
+  }, [])
+
+  // sorted list of PIDs we actually have data for
   const activePids = useMemo(
-    () => Object.keys(pidData).map(k => parseInt(k, 10)).sort((a,b) => a - b),
+    () => Object.keys(pidData)
+                  .map(k => parseInt(k, 10))
+                  .sort((a, b) => a - b),
     [pidData]
-  );
+  )
+
+  const fetchOnce = async () => {
+    if (!ble.notifying) return
+    setLoading(true)
+    try { await requestStatus() }
+    finally { setLoading(false) }
+  }
   
   const startStream = async () => {
-    if (!ble.notifying) return;
-    setLiveLoading(true);
     try {
-      await requestLiveStart();
+      await requestLiveStart();  // writes 0x06
       setStreaming(true);
-    } finally {
-      setLiveLoading(false);
+    }catch(error){
+      console.log("Error trying to start stream: ", error);
     }
   };
-
 
   // add a button to stop live data stream
   const stopStreamHandler = async () => {
-    setLiveLoading(true);
     try {
-      await requestLiveStop();
+      await requestLiveStop();   // writes 0x07
       setStreaming(false);
-    }finally{
-      setLiveLoading(false);
+    } catch (error) {
+      console.log("Error trying to stop stream: ", error);
     }
   };
 
+  // always clean up
   useEffect(() => {
     return () => {
-      if (streaming) {
-        requestLiveStop();
-      }
-    };
-  }, [streaming]);
+      if (streaming) requestLiveStop()
+    }
+  }, [streaming])
 
   return (
     <div className="flex items-center flex-col justify-center">
@@ -146,63 +147,68 @@ export default function PS_RD(){
         <button
           disabled={!ble.connected}
           className={`${!ble.notifying ? 'opacity-60 cursor-not-allowed' : ''} inline-block w-full text-center text-lg min-w-[200px] px-6 py-6 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b`}
-          onClick={startStream}
+          onClick={streaming ? stopStreamHandler : startStream}
         >
-          {liveLoading ? "Getting Data..." : "Live Stream"}
+          {streaming ? "Stop Stream" : "Live Stream"}
         </button>
-        {streaming && (
-          <button onClick={stopStreamHandler} className="inline-block w-full text-center text-lg min-w-[200px] px-6 py-6 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b">
-            Stop Stream</button>
-        )}
       </div>
+      
 
-      <div className="grid grid-cols-3 gap-10">
-        {/* Ignition ---------------------------------------------------- */}
+      {/* 
+      <div  className="grid grid-cols-3 gap-10">
+        {/* Ignition ---------------------------------------------------- }
         <Card img={ignitionSwitchImg} title="Ignition Switch" highlight={highlight}>
           Status:&nbsp;<strong>{ignition}</strong>
         </Card>
 
-        {/* Seat Adjuster ---------------------------------------------- */}
+        {/* Seat Adjuster ---------------------------------------------- }
         <Card img={adjusterSwitchImg} title="Seat Adjuster Switch" highlight={highlight}>
           Position:&nbsp;<strong>{adjuster}</strong>
         </Card>
 
-        {/* Lumbar ------------------------------------------------------ */}
+        {/* Lumbar ------------------------------------------------------ }
         <Card img={lumbarSwitchImg} title="Lumbar Adjuster Switch" highlight={highlight}>
           Position:&nbsp;<strong>{lumbar}</strong>
         </Card>
-      </div>
+      </div>*/}
 
       {/* 4. Dynamic table of active PIDs */}
         {activePids.length > 0 && (
-          <div className="w-full px-8 mt-8">
-            <h2 className="text-2xl text-white font-semibold mb-4">
-              Active Parameters
-            </h2>
-            <table className="min-w-full table-auto bg-slate-800 text-white rounded-lg overflow-hidden shadow">
-              <thead className="bg-slate-700">
+          <div className="w-full px-4">
+            <h2 className="text-2xl text-white mb-2">Active Parameters</h2>
+            <table className="w-full bg-gray-800 text-white rounded overflow-hidden">
+              <thead className="bg-gray-700">
                 <tr>
-                  <th className="px-4 py-2 text-left">PID</th>
-                  <th className="px-4 py-2 text-left">Name</th>
-                  <th className="px-4 py-2 text-left">Value</th>
+                  <th className="p-2 text-left">PID</th>
+                  <th className="p-2 text-left">Name</th>
+                  <th className="p-2 text-left">Value</th>
+                  <th className="p-2 text-left">Unit</th>
                 </tr>
               </thead>
               <tbody>
-                {activePids.map(pid => (
-                  <tr key={pid} className="border-t border-slate-700">
-                    <td className="px-4 py-2">
-                      0x{pid.toString(16).toUpperCase().padStart(2,'0')}
-                    </td>
-                    <td className="px-4 py-2">
-                      {PID_NAMES[pid] ?? 'Unknown'}
-                    </td>
-                    <td
-                      className={`px-4 py-2 ${highlight ? 'bg-green-700' : ''}`}
-                    >
-                      {pidData[pid]}
-                    </td>
-                  </tr>
-                ))}
+                {activePids.map(pid => {
+                  const raw = pidData[pid] ?? []
+                  const decoded = getDecoder(pid)(raw)
+                  
+
+                  // metadata lookup
+                  const meta = pidMeta[pid];
+                  const description = meta?.description ?? FALLBACK_NAME(pid);
+                  const unit = meta?.unit ?? '';
+
+                  return (
+                    <tr key={pid} className="border-t border-slate-700">
+                      <td className="px-4 py-2">
+                        0x{pid.toString(16).toUpperCase().padStart(2, '0')}
+                      </td>
+                      <td className="px-4 py-2">{description}</td>
+                      <td className={`px-4 py-2 ${highlight ? 'bg-green-700' : ''}`}>
+                        {decoded}
+                      </td>
+                      <td className="px-4 py-2">{unit}</td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>

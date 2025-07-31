@@ -42,28 +42,28 @@ function decodeDtc(hi, lo){
 
 /* notifcation fan-out */
 export function onDtc(cb){
-    let buf = []; //running list
-    return onBleNotify(raw => {
-        /* 0xCC means "clear done" */
-        if(raw.length === 1 && raw[0] === 0xCC){
-            buf = [];
-            cb({cleared: true, list:[]});
-            return;
-        }
+  let buf = []
+  return onBleNotify(raw => {
+    // 0xCC = “clear done”
+    if (raw.length === 1 && raw[0] === 0xCC) {
+      buf = []
+      cb({ cleared: true, list: [] })
+      return
+    }
+    // ignore odd lengths
+    if (raw.length % 2) return
 
-        if(raw.length % 2) return;  // malformed → ignore
-        const list = [];
-        for(let i = 0; i < raw.length; i+=2){
-            buf.push(decodeDtc(raw[i], raw[i+1]));
-        }
+    // accumulate pairs
+    for (let i = 0; i < raw.length; i += 2) {
+      buf.push(decodeDtc(raw[i], raw[i+1]))
+    }
 
-        //last chunk is <20 B ->flush
-        if (raw.length < 20) {
-            cb({ cleared: false, list: buf });
-            buf = [];
-        }
-
-    });
+    // final chunk (<20 bytes) → flush buffer
+    if (raw.length < 20) {
+      cb({ cleared: false, list: buf })
+      buf = []
+    }
+  })
 }
 
 // (B) receive 2-byte seat status 

@@ -50,11 +50,10 @@ export default function PS_RC() {
 
   useEffect(() => {
     return onDtc(({ cleared, list }) => {
-      setDtc(prev => {
-        const cat = lastCategoryRef.current;
-        if (cleared) return { ...prev, [cat]: [] };
-        else return { ...prev, [cat]: list };
-      });
+      setDtc(prev => ({
+        ...prev,
+        [lastCategoryRef.current]: cleared ? [] : list
+      }));
     });
   }, []);
 

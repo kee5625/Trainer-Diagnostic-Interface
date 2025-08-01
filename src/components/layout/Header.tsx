@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom"
-import { disconnectBle, onBleState } from "./bluetooth/core";
+import { disconnectBle, onBleState } from "../../core/ble/core";
 import { useEffect, useState } from "react";
 
 

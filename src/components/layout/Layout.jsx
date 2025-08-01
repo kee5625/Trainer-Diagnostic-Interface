@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom";
 import Header from "./Header";
 import { useState } from "react";
-import Modal from "./Modal";
+import Modal from "../generic/Modal";
 
 function Layout() {
   const [showModal, setShowModal] = useState(false);

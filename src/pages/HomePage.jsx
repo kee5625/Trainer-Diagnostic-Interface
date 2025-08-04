@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom';
-import { disconnectBle } from '../components/bluetooth/core';
+import { disconnectBle } from '../core/ble/core';
 
 
 function HomePage (){

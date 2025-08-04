@@ -86,12 +86,14 @@ export default function PS_RD(){
   }, [])
 
   // sorted list of PIDs we actually have data for
-  const activePids = useMemo(
-    () => Object.keys(pidData)
-                  .map(k => parseInt(k, 10))
-                  .sort((a, b) => a - b),
-    [pidData]
-  )
+  const displayedPids = useMemo(() => {
+    // if we already have a full mask, slice out the first 20 supported PIDs
+    if (supportedPids.length) {
+      return supportedPids.slice(0, 20);
+    }
+    // otherwise default to 0x01–0x14
+    return Array.from({ length: 20 }, (_, i) => i + 1);
+  }, [supportedPids]);
 
   const fetchOnce = async () => {
     if (!ble.notifying) return
@@ -104,11 +106,19 @@ export default function PS_RD(){
       await requestStatus(wanted);
     }finally{setLoading(false)}
   }
+
+  useEffect(() => {
+    if (ble.connected && ble.notifying && displayedPids.length) {
+      setLoading(true);
+      requestStatus(displayedPids).finally(() => setLoading(false));
+    }
+  }, [ble.connected, ble.notifying, displayedPids]);
   
   const startStream = async () => {
     try {
       await requestLiveStart();  // writes 0x06
       setStreaming(true);
+      
     }catch(error){
       console.log("Error trying to start stream: ", error);
     }
@@ -151,7 +161,7 @@ export default function PS_RD(){
       
       <div className="gap-5 flex p-5 flex-row justify-center">
         <button
-          disabled={!ble.connected }
+          disabled={!ble.connected || !ble.notifying }
           className={`${!ble.notifying ? 'opacity-60 cursor-not-allowed' : ''} inline-block w-full text-center text-lg min-w-[200px] px-6 py-6 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b`}
           onClick={fetchOnce}
         >
@@ -186,7 +196,7 @@ export default function PS_RD(){
       </div>*/}
 
       {/* 4. Dynamic table of active PIDs */}
-        {activePids.length > 0 && (
+        {displayedPids.length > 0 && (
           <div className="w-full px-4">
             <h2 className="text-2xl text-white mb-2">Active Parameters</h2>
             <table className="w-full bg-gray-800 text-white rounded overflow-hidden">
@@ -199,7 +209,7 @@ export default function PS_RD(){
                 </tr>
               </thead>
               <tbody>
-                {activePids.map(pid => {
+                {displayedPids.map(pid => {
                   const raw = pidData[pid] ?? []
                   const decoded = getDecoder(pid)(raw)
                   
@@ -212,15 +222,15 @@ export default function PS_RD(){
                   return (
                     <tr key={pid} className="border-t border-slate-700">
                       <td className="px-4 py-2">
-                        0x{pid.toString(16).toUpperCase().padStart(2, '0')}
+                        0x{pid.toString(16).toUpperCase().padStart(2,'0')}
                       </td>
                       <td className="px-4 py-2">{description}</td>
                       <td className={`px-4 py-2 ${highlight ? 'bg-green-700' : ''}`}>
-                        {decoded}
+                        {raw.length ? decoded : '—'}
                       </td>
                       <td className="px-4 py-2">{unit}</td>
                     </tr>
-                  )
+                  );
                 })}
               </tbody>
             </table>

@@ -143,7 +143,7 @@ export default function ReadData({trainer}){
   }, [streaming])
 
   return (
-    <div className="flex items-center flex-col justify-center">
+    <div className="flex items-center flex-col justify-center w-full">
       <div className='flex flex-row gap-5 items-center'>
         <button onClick={() => navigate(`/trainers/${trainer.id}`)} className=''>
           <svg

@@ -27,13 +27,14 @@ export default function TrainerHome({ trainer }) {
 
   /* ─────────────────────────────── render ─────────────────────────────── */
   return (
-    <div className="row-start-2 w-full h-full flex justify-center items-center">
+    <div className="w-full h-full flex justify-center items-center p-4 sm:p-6 lg:p-8">
       <div className="
           relative flex flex-row gap-10
           bg-white/2 backdrop-blur-lg backdrop-saturate-150
           ring-1 ring-white/15
           shadow-2xl rounded-3xl
           min-w-[1250px] w-full min-h-[700px] h-full
+          overflow-hidden
         ">
         <div className="grid grid-cols-[1fr_300px] gap-2 items-center mx-auto max-w-[1000px] w-full">
           {/* ◂── Left – image + connect button ──────────────────────────── */}
@@ -51,11 +52,15 @@ export default function TrainerHome({ trainer }) {
                   disabled={loading || connected}
                   onClick={connectBle}
                   className={`
-                    flex flex-row items-center justify-center gap-2 rounded-full
-                    px-6 py-3 text-white shadow-md transition-all duration-300 ease-in-out 
-                    bg-gradient-to-r from-green-600 via-green-700 to-green-800 shadow-green-900 hover:shadow-green-800
-                    w-60 text-lg
-                    ${loading || connected ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-green-800'}
+                    relative flex flex-row items-center justify-center gap-3 min-w-[200px]
+                    rounded-full px-6 py-3 sm:px-8 sm:py-4
+                    text-white font-medium shadow-lg 
+                    transition-all duration-300 ease-in-out 
+                    bg-gradient-to-r from-green-600 via-green-700 to-green-800 
+                    shadow-green-900/50 hover:shadow-green-800/60
+                    w-full max-w-xs text-base sm:text-lg
+                    transform ${!connected ? "hover:scale-105 active:scale-95" : ""}
+                    ${loading || connected ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-xl'}
                   `}
                 >
                   {loading ? (
@@ -111,17 +116,46 @@ export default function TrainerHome({ trainer }) {
                 `Interact with the ${trainer.name.toLowerCase()} system. Connect to begin
                  reading live data or trouble codes.`}
             </p>
+              
+            <div className="mb-6">
+              <div className={`
+                inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium
+                transition-all duration-300
+                ${connected 
+                  ? 'bg-green-500/20 text-green-300 border border-green-500/30' 
+                  : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'
+                }
+              `}>
+                <div className={`w-2 h-2 rounded-full ${connected ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`} />
+                {connected ? 'Device Connected' : 'Device Disconnected'}
+              </div>
+            </div>
 
             <div className="flex flex-col w-full gap-4">
               <button
                 onClick={() => navigate(`/trainers/${trainer.id}/read-data`)}
-                className='inline-block w-full text-center min-w-[200px] px-5 py-4 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px'
+                className={`
+                  w-full px-5 py-4 text-white font-medium text-base
+                  transition-all duration-300 rounded-xl shadow-lg
+                  bg-gradient-to-r from-blue-600 to-blue-500 
+                  hover:from-blue-700 hover:to-blue-600
+                  shadow-blue-900/30 hover:shadow-blue-800/40 hover:shadow-xl
+                  transform hover:scale-105 active:scale-95
+                `}
               >
                 Read Live Data
               </button>
               <button
                 onClick={() => navigate(`/trainers/${trainer.id}/read-codes`)}
-                className='inline-block w-full text-center min-w-[200px] px-5 py-4 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px'
+                className={`
+                  w-full px-5 py-4 text-white font-medium text-base
+                  transition-all duration-300 rounded-xl shadow-lg
+                  bg-gradient-to-r from-blue-600 to-blue-500 
+                  hover:from-blue-700 hover:to-blue-600
+                  shadow-blue-900/30 hover:shadow-blue-800/40 hover:shadow-xl
+                  transform hover:scale-105 active:scale-95
+                  
+                `}
               >
                 Read Trouble Codes
               </button>

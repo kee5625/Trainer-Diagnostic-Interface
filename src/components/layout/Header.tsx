@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from "react-router-dom"
 import { disconnectBle, onBleState } from "../../core/ble/core";
 import { useEffect, useState } from "react";
 
-
+// Header component
 export default function Header({setShowModal}) {
     const navigate =useNavigate();
     const location = useLocation();

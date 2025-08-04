@@ -14,6 +14,7 @@ function publishState(s) {
   bleListeners.forEach(l => l({ ...s }));
 }
 
+// Get the current state of Ble (connected?, notifications?)
 export function onBleState(cb) {
   cb(bleState);               // replay immediately
   bleListeners.add(cb);
@@ -126,6 +127,8 @@ export function enqueue(op) {
   opChain = opChain.then(op, op);
   return opChain;
 }
+
+// Send the commands to ESP32 (Get DTCs, Live stream data...)
 export function writeCommand(bytes) {
   if (!tx) throw new Error('BLE not ready');
   return enqueue(() => {

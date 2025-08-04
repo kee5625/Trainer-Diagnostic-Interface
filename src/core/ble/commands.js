@@ -17,10 +17,12 @@ export function requestLiveStart() {
     return writeCommand([CMD_LIVE_START]);
 }
 
+//send stop cmd
 export function requestLiveStop() {
     return writeCommand([CMD_LIVE_STOP]);
 }
 
+// custom PID values for adjust switchers (currently not implemented)
 const DIR = ['NEUTRAL', 'UP', 'DOWN', 'LEFT', 'RIGHT'];
 
 
@@ -52,7 +54,7 @@ export function onDtc(cb){
       buf.push(decodeDtc(raw[i], raw[i+1]))
     }
 
-    // final chunk (<20 bytes) → flush buffer
+    // final chunk (<20 bytes) -> flush buffer
     if (raw.length < 20) {
       cb({ cleared: false, list: buf })
       buf = []
@@ -60,8 +62,8 @@ export function onDtc(cb){
   })
 }
 
-// (B) receive 2-byte seat status 
-let seatState = { ignition:false, seat:'NEUTRAL', lumbar:'NEUTRAL' };
+// receive 2-byte seat status 
+let seatState = { ignition:false, seat:'NEUTRAL', lumbar:'NEUTRAL' }; //code for the unused custom PID
 
 export function onSeatStatus(cb){
     return onBleNotify(raw => {
@@ -77,9 +79,7 @@ export function onSeatStatus(cb){
     });
 }
 
-
-
-
+// Used for live streaming data and getting all PID values
 export function subscribeAll(period = 500) {
     const timer = setInterval(requestStatus, period);
     return () => clearInterval(timer);

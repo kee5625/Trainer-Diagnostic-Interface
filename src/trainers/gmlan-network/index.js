@@ -1,4 +1,4 @@
-// trainers/power-seat/index.js
+// trainers/gmlan-network/index.js
 import hero from '../../assets/gmlan_network.png';
 import cardImg from '../../assets/bg_gmlan.png';
 import * as CMD from '../../core/ble/commands';

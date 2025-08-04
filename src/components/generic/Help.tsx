@@ -1,6 +1,7 @@
 import toast from "react-hot-toast";
 import React, { useState } from "react";
 
+// Help page for sending any problems
 export default function Help() {
   const [formData, setFormData] = useState({
     name: "",

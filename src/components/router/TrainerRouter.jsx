@@ -4,6 +4,7 @@ import TrainerHome  from '../generic/TrainerHome';
 import ReadData     from '../generic/ReadData';
 import ReadCodes    from '../generic/ReadCodes';
 
+// Dynamic routing for all trainers
 export default function TrainerRouter() {
   return (
     <Routes>

@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import * as ble from './core';
 
+// Organized setup for connection handlers
 export function useBle(gapPrefix) {
   const [state, setState] = useState({ connected: false, notifying: false });
 

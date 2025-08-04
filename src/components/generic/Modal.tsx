@@ -1,3 +1,4 @@
+// Popup modal for disconnecting bluetooth if redirected to other pages
 export default function Modal(){
     return (
         <div className="relative z-10" aria-labelledby="dialog-title" role="dialog" aria-modal="true">

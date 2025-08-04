@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 export default function Card({ route, imageUrl, title, description }) {
   const navigate = useNavigate();
 
+  // Animated Card for each trainer
   return (
     <article
       onClick={() => navigate(route)}

@@ -12,7 +12,7 @@ function Layout() {
                  radial-gradient(at 24% 42%, #11335f 0px, transparent 50%),
                  radial-gradient(at 65% 78%, #373434 0px, transparent 50%), 
                  radial-gradient(at 7% 88%, #0c1b1d 0px, transparent 50%), 
-               #000000`,
+                 #000000`,
     }} 
     className="min-h-screen w-full text-white font-sans antialiased flex flex-col fixed inset-0 overflow-auto">
       {/* Header */}
@@ -23,7 +23,6 @@ function Layout() {
       <div className="flex-1 flex items-center justify-center w-full max-w-7xl mx-auto px-4 sm:px-6 pb-4 sm:pb-6 relative z-10">
         <Outlet />
       </div>
-
       {showModal && (
         <Modal />
       )}

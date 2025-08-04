@@ -1,6 +1,6 @@
 // trainers/power-seat/index.js
 import hero from '../../assets/gmlan_network.png';
-import cardImg from '../../assets/bg_power_seat.png';
+import cardImg from '../../assets/bg_gmlan.png';
 import * as CMD from '../../core/ble/commands';
 
 export default {

@@ -7,7 +7,7 @@ export default function TrainerHome({ trainer }) {
   const { connected, notifying, connect, disconnect } = useBle(trainer.gapPrefix);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
+  
   /** small helper so buttons show a spinner for UX */
   const withSpinner = fn => async () => {
     setLoading(true);
@@ -15,7 +15,15 @@ export default function TrainerHome({ trainer }) {
   };
 
   const connectBle    = withSpinner(connect);
-  const disconnectBle = withSpinner(disconnect);
+
+  const handleDisconnect = withSpinner(async () => {
+    await new Promise(res => setTimeout(res, 2000));  // keep spinner up
+    await disconnect();
+  });
+
+  function sleep(ms){
+      return new Promise(resolve => setTimeout(resolve, ms));
+  }
 
   /* ─────────────────────────────── render ─────────────────────────────── */
   return (
@@ -79,7 +87,7 @@ export default function TrainerHome({ trainer }) {
 
                 {/* Disconnect floating X */}
                 <button
-                    onClick={disconnectBle}
+                    onClick={handleDisconnect}
                     disabled={!connected}
                     className={`
                     absolute -top-3 -right-3 rounded-full p-2 bg-gradient-to-r from-red-600 via-red-700 to-red-800 shadow-md text-white
@@ -107,14 +115,12 @@ export default function TrainerHome({ trainer }) {
             <div className="flex flex-col w-full gap-4">
               <button
                 onClick={() => navigate(`/trainers/${trainer.id}/read-data`)}
-                disabled={!connected}
                 className='inline-block w-full text-center min-w-[200px] px-5 py-4 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px'
               >
                 Read Live Data
               </button>
               <button
                 onClick={() => navigate(`/trainers/${trainer.id}/read-codes`)}
-                disabled={!connected}
                 className='inline-block w-full text-center min-w-[200px] px-5 py-4 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px'
               >
                 Read Trouble Codes

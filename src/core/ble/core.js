@@ -58,10 +58,10 @@ async function startNotifyWithRetry(ch) {
 }
 
 /* ── Connect ──────────────────────────────────────────────────────────────── */
-export async function connectBle({gapPrefix = 'Trainer-'} = {}) {
+export async function connectBle() {
   try {
     device = await navigator.bluetooth.requestDevice({
-      filters: [{ namePrefix: gapPrefix }],
+      filters: [{ namePrefix: GAP_NAME_PREF }],
       optionalServices: [SERVICE_UUID],
     });
 

@@ -1,5 +1,5 @@
 // trainers/power-seat/index.js
-import hero from '../../assets/power_seat_trainer.webp';
+import hero from '../../assets/gmlan_network.png';
 import cardImg from '../../assets/bg_power_seat.png';
 import * as CMD from '../../core/ble/commands';
 

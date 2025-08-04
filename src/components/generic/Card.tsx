@@ -17,7 +17,7 @@ export default function Card({ route, imageUrl, title, description }) {
           <h1 className="text-white mt-2 text-xl mb-5 transform  translate-y-20 uppercase group-hover:translate-y-0 duration-300 group-hover:text-orange-500">
             {title}
           </h1>
-          <p className="opacity-0 text-white text-xl group-hover:opacity-80 transform duration-500">
+          <p className="opacity-0 text-white text-lg group-hover:opacity-80 transform duration-500">
             {description}
           </p>
         </div>

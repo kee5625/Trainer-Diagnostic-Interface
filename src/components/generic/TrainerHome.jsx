@@ -22,20 +22,19 @@ export default function TrainerHome({ trainer }) {
     <div className="row-start-2 w-full h-full flex justify-center items-center">
       <div className="
           relative flex flex-row gap-10
-          bg-white/5 backdrop-blur-lg backdrop-saturate-150
-          ring-1 ring-white/15 shadow-2xl rounded-3xl
+          bg-white/2 backdrop-blur-lg backdrop-saturate-150
+          ring-1 ring-white/15
+          shadow-2xl rounded-3xl
           min-w-[1250px] w-full min-h-[700px] h-full
         ">
         <div className="grid grid-cols-[1fr_300px] gap-2 items-center mx-auto max-w-[1000px] w-full">
           {/* ◂── Left – image + connect button ──────────────────────────── */}
           <div className="flex flex-col items-center gap-4 w-[88%]">
-            <div className="relative overflow-hidden py-8 rounded-xl
-                            bg-gradient-to-tr from-slate-800 to-slate-800
-                            border border-slate-600 shadow-inner">
+            <div className="relative overflow-hidden py-8 rounded-xl bg-gradient-to-tr from-slate-800 to-slate-800 border border-slate-600 flex flex-col gap-2 items-center justify-center shadow-inner">
               <img
                 src={trainer.hero}
                 alt={trainer.name}
-                className="w-[90%] h-full object-contain"
+                className="w-[90%] min-w-[600px] max-h-[400px] object-contain p-5"
               />
 
               {/* Connect / Disconnect */}
@@ -44,38 +43,53 @@ export default function TrainerHome({ trainer }) {
                   disabled={loading || connected}
                   onClick={connectBle}
                   className={`
-                    flex items-center justify-center gap-2 rounded-full w-60 px-6 py-3 text-white text-lg
-                    bg-gradient-to-r from-green-600 via-green-700 to-green-800 shadow-lg shadow-green-900
-                    transition-all
+                    flex flex-row items-center justify-center gap-2 rounded-full
+                    px-6 py-3 text-white shadow-md transition-all duration-300 ease-in-out 
+                    bg-gradient-to-r from-green-600 via-green-700 to-green-800 shadow-green-900 hover:shadow-green-800
+                    w-60 text-lg
                     ${loading || connected ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-green-800'}
                   `}
                 >
-                  {loading
-                    ? 'Connecting…'
-                    : connected
-                    ? 'Connected'
-                    : 'Connect'}
-                  {loading && (
-                    <svg className="w-5 h-5 animate-spin fill-blue-600" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-                    </svg>
-                  )}
+                  {loading ? (
+                    <>
+                        {connected ? "Disconnecting..." : "Connecting..."}
+                        <svg aria-hidden="true" className="w-6 h-6 text-gray-200 animate-spin fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                            <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+                        </svg>
+                    </>
+                    ) : connected ? (
+                    <>
+                        Connected
+                        <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none">
+                        <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                    </>
+                    ) : (
+                    <>
+                        Connect
+                        <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M17.657 6.343a8 8 0 1 1-11.314 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                    </>
+                    )}
+
                 </button>
 
                 {/* Disconnect floating X */}
                 <button
-                  onClick={disconnectBle}
-                  disabled={!connected || loading}
-                  className={`
-                    absolute -top-3 -right-3 rounded-full p-2
-                    bg-gradient-to-r from-red-600 via-red-700 to-red-800 text-white shadow-md
-                    transition-opacity
-                    ${connected ? 'opacity-100' : 'opacity-0 pointer-events-none'}
-                  `}
+                    onClick={disconnectBle}
+                    disabled={!connected}
+                    className={`
+                    absolute -top-3 -right-3 rounded-full p-2 bg-gradient-to-r from-red-600 via-red-700 to-red-800 shadow-md text-white
+                    transition-opacity duration-300 ${connected ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+                    `}
                 >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-                    <path d="M6 6l12 12M6 18L18 6" stroke="currentColor" strokeWidth="2"/>
-                  </svg>
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M17.657 6.343a8 8 0 1 1-11.314 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
                 </button>
               </div>
             </div>
@@ -83,25 +97,25 @@ export default function TrainerHome({ trainer }) {
 
           {/* ▸── Right – title / description / nav buttons ──────────────── */}
           <div className="flex flex-col justify-center text-white w-full max-w-[350px]">
-            <h2 className="text-3xl font-bold mb-2">{trainer.name} Trainer</h2>
+            <h2 className="text-2xl font-bold mb-2">{trainer.name} Trainer</h2>
             <p className="text-gray-300 text-sm pb-5">
               {trainer.description ??
                 `Interact with the ${trainer.name.toLowerCase()} system. Connect to begin
                  reading live data or trouble codes.`}
             </p>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col w-full gap-4">
               <button
                 onClick={() => navigate(`/trainers/${trainer.id}/read-data`)}
                 disabled={!connected}
-                className="btn-primary w-full"
+                className='inline-block w-full text-center min-w-[200px] px-5 py-4 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px'
               >
                 Read Live Data
               </button>
               <button
                 onClick={() => navigate(`/trainers/${trainer.id}/read-codes`)}
                 disabled={!connected}
-                className="btn-primary w-full"
+                className='inline-block w-full text-center min-w-[200px] px-5 py-4 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px'
               >
                 Read Trouble Codes
               </button>

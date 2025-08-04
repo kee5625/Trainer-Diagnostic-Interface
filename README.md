@@ -1,118 +1,181 @@
-# Trainer Diagnostic Interface
+# Trainer Diagnostic Interface – Developer README
 
-This project is a **React-based web application** to simulate and interact with various Atech trainer devices over **Bluetooth LE (BLE)**.  
-It supports multiple trainers, each with options to:
-- Read Live Data
-- Read Diagnostic Trouble Codes (DTC)
+Welcome to the **Trainer Diagnostic Interface**.  This document is a reference for new contributors and explains the overall architecture, project layout, and the conventions you will need to follow when adding features or new *trainers*.
 
 ---
 
-## 📁 Project Structure
+## 1. Tech Stack
 
-``` bash
+| Layer             | Library / Tool                       | Notes                                                          |
+| ----------------- | ------------------------------------ | -------------------------------------------------------------- |
+| UI                | **React 18** + React‑Router v6       | Functional components + hooks only.                            |
+| Styling           | **Tailwind CSS**                     | Utility‑first classes (personal preference).                   |
+| Build             | **Vite**                             | Instant HMR + ESM build.                                       |
+| BLE               | **Web Bluetooth API**                | Runs entirely in the browser (not available for all browsers). |
+| State fan‑out     | Custom pub/sub in `core/ble/core.js` | Keeps UI protocol‑agnostic.                                    |
 
-│   App.jsx
-│   index.css
-│   main.jsx
-│   
-├───assets
-│       power_seat_trainer.webp
-│       react.svg
-│       wiper_washer_trainer.webp
-│
-├───components
-│   │   bluetooth.js
-│   │   HomeButton.jsx
-│   │   Layout.jsx
-│   │   TabNav.jsx
-│   │
-│   ├───bluetooth
-│   │       core.js
-│   │       index.js
-│   │       powerSeat.js
-│   │       wiperWasher.js
-│   │
-│   ├───ReadCodeComponents
-│   │       PS_RC.jsx
-│   │       WW_RC.jsx
-│   │
-│   └───ReadDataComponents
-│           PS_RD.jsx
-│           WW_RD.jsx
-│
-└───pages
-        HomePage.jsx
-        PowerSeatTrainer.jsx
-        ReadCodes.jsx
-        ReadData.jsx
-        TrainerActionPage.jsx
-        Trainers.jsx
-        WiperWasherTrainer.jsx
+---
 
+## 2. Getting Started
+
+### 2.1 Prerequisites
+
+- **Node.js 18+**
+- Available Browsers: Chrome, Edge, Opera, Chrome Android, Opera Android, Samsung Internet
+
+### 2.2 Install & Run
+
+```bash
+# Install dependencies
+npm install
+
+# Start the dev server (http://localhost:5173 by default)
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview the production build locally
+npm run preview
 ```
 
 ---
 
-## 🔷 Key Concepts
+## 3. Directory Structure
 
-### 🧰 BLE Service Layer
-Located in `components/bluetooth/`:
-- **`core.js`**  
-  General-purpose BLE utilities: `connectBle`, `disconnectBle`, `setNotifyCallback`, `writeCommand`.
-- **`powerSeat.js` and `wiperWasher.js`**  
-  Abstraction for trainer-specific BLE command wrappers.  
-  If each trainer needs different command sequences or response formats, these modules encapsulate trainer logic.
-  Individual ble functions are defined inside the trainer .js files.  
-  If all trainers share the same BLE protocol, you can call `core.js` directly from components.
+```
+src/
+│  App.jsx                 # App's Top‑level Router
+│  index.css               # Tailwind init + custom layers (none right now)
+├─ assets/                 # Static images (trainers, bg, etc..)
+├─ components/
+│   ├─ generic/            # Re‑usable UI & trainer‑agnostic pages
+│   └─ layout/             # Header, Layout, Tabs, etc.
+├─ core/
+│   └─ ble/                # Low‑level Bluetooth helpers (important)
+├─ data/                   # PID library (decode functions, dtc Definitions, general PID info)
+├─ pages/                  # Stand‑alone route pages (Home, About, Help)
+├─ trainers/               # **One folder per trainer** (see #6)
+└─ utils/                  # Misc utilities (trainerRegistry, helpers)
+```
 
----
+### 3.1 Important Files
 
-### 🧩 Components
-Trainer actions are organized by **trainer** and **action**:
-- **Read Data:**  
-  Located in `ReadDataComponents/`, e.g., `PS_RD.jsx`, `WW_RD.jsx`
-- **Read Codes:**  
-  Located in `ReadCodeComponents/`, e.g., `PS_RC.jsx`, `WW_RC.jsx`
-
-These are used in page-level route components.
-
----
-
-### 📄 Pages
-Each route (e.g., `/trainer/power-seat/read-data`) is handled by a corresponding page in `pages/`.
-- **Dynamic routing:**  
-  `TrainerActionPage.jsx` handles trainer and action combinations dynamically.
-- **Trainer home pages:**  
-  `PowerSeatTrainer.jsx` and `WiperWasherTrainer.jsx` display connection controls and route options for their respective trainer.
-- **Trainers selection page:**  
-  `Trainers.jsx` allows the user to pick a trainer.
+| Path                                  | Purpose                                            |
+| ------------------------------------- | -------------------------------------------------- |
+| `core/ble/core.js`                    | Connection management, notify fan‑out, write queue |
+| `core/ble/commands.js`                | Codec / opcode helpers + high‑level wrappers       |
+| `components/generic/ReadData.jsx`     | Generic Live‑and‑snapshot data page                |
+| `components/generic/ReadCodes.jsx`    | Generic DTC reader / clearer                       |
+| `components/generic/Card.jsx`         | Animated card used on Trainers dashboard           |
+| `components/router/TrainerRouter.jsx` | Dynamically mounts **all** trainers                |
+| `utils/trainerRegistry.js`            | Auto‑discovers trainers via `import.meta.glob`     |
 
 ---
 
-## 🚀 Routing Overview
+## 4. Data Flow Overview
 
-| Path                                | Description                     |
-|------------------------------------|---------------------------------|
-| `/`                                | Home page                      |
-| `/trainers`                        | Trainer selection page         |
-| `/power-seat`                      | Power Seat home page           |
-| `/wiper-washer`                    | Wiper Washer home page         |
-| `/trainer/:trainerId/:action`     | Dynamic trainer + action page  |
+```
+┌──────────────┐          writeCommand([...])          ┌────────────────┐
+│  UI Layer    │  ───────────────────────────────────▶ │  ESP32 trainer │
+└──────────────┘                                       └────────────────┘
+       ▲                                                      │
+       │    characteristicvaluechanged                        │
+       │   (raw 20‑byte frames)                               ▼
+┌──────────────┐   onBleNotify(raw)   ┌───────────────────────────────────┐
+│  components  │◀──────────────────── │ core/ble/core.js  (pub/sub fan‑out)│
+└──────────────┘                     └───────────────────────────────────┘
+```
+
+- **Write queue** (`enqueue`) guarantees BLE writes never overlap.
+- **Pub/Sub** allows multiple React components to listen for the same stream without coupling.
+- UI stays *protocol‑agnostic*; each trainer module provides thin wrappers that translate UI intents into the proper BLE opcodes.
 
 ---
 
-## 🔷 Notes
+## 5. The Trainer System
 
-✅ `core.js` is kept generic and reusable.  
-✅ `powerSeat.js` / `wiperWasher.js` is to be used for encapsulating trainer-specific ble protocols.  
-✅ Components should **only care about their trainer & action**, not BLE internals.  
-✅ Dynamic routing (`TrainerActionPage.jsx`) makes adding new trainers and actions organized.
+A *trainer* is a folder under `src/trainers/` exposing a default export with the following signature (example):
+
+```js
+export default {
+  id: 'air-conditioner',      // URL segment => /trainers/air-conditioner
+  name: 'Air Conditioner',    // Display text
+  hero,                       // 1920×600 hero banner
+  cardImg,                    // 3:2 tile image for dashboard
+  gapPrefix: 'Trainer-AC',    // BLE GAP name prefix used for scanning
+
+  components: {
+    Home: null,               // optional override pages
+    ReadData: null,
+    ReadCodes: null,
+  },
+
+  ble: {
+    readCodes:  () => [CMD.CMD_PENDING],
+    clearCodes: () => [CMD.CMD_CLEAR],
+    status:     () => [CMD.CMD_STATUS],
+    liveStart:  () => [CMD.CMD_LIVE_START],
+    liveStop:   () => [CMD.CMD_LIVE_STOP],
+  },
+};
+```
+**Why?**
+> - Decouples domain logic from UI. UI just calls `trainer.ble.status()` – whatever that returns is pushed straight down to BLE.
+> - Route generation and tab labels can be completely automated.
+
+### 5.1 Routing
+
+`TrainerRouter.jsx` dynamically creates nested routes for every trainer:
+
+- `/trainers/:id` -> Home page (generic or overridden)
+- `/trainers/:id/read-data` -> Live Data page
+- `/trainers/:id/read-codes` -> DTC page
+
+Because the registry is populated via `import.meta.glob`, **adding a trainer requires zero manual wiring**--simply drop an `index.js` in a new folder.
 
 ---
 
-## 📄 Future Enhancements
+## 6. Adding a New Trainer  
 
-- Modularize all components by implementing a backend and using a DB
-- Protect routes and actions by adding guardrails to all interactions
+Follow this checklist to integrate a new trainer module:
 
+| Step | Action                                                                                                            |
+| ---- | ----------------------------------------------------------------------------------------------------------------- |
+| 1.   | **Create assets** in `src/assets/` – a hero (`myTrainer_hero.webp`) and a card image (`bg_myTrainer.png`).        |
+| 2.   | **Scaffold folder**: `src/trainers/my-trainer/index.js`.                                                          |
+| 3.   | **Fill descriptor** (copy template below). Adjust `gapPrefix` to match the BLE advertising name of your hardware. |
+| 4.   | *(Optional)* Create custom pages under `src/components/my-trainer/` and reference them in the `components` map.   |
+| 5.   | *(Optional)* Override `ble` helpers if your command set differs. Each function must return an **array** of bytes. |
+
+```js
+// src/trainers/my-trainer/index.js
+import hero    from '../../assets/myTrainer_hero.webp';
+import cardImg from '../../assets/bg_myTrainer.png';
+import * as CMD from '../../core/ble/commands';
+
+export default {
+  id:        'my-trainer',
+  name:      'My Trainer',
+  hero,
+  cardImg,
+  gapPrefix: 'Trainer-MY',
+
+  // Optional custom pages (set to null to fall back to generic ones)
+  components: {
+    Home:      null,
+    ReadData:  null,
+    ReadCodes: null,
+  },
+
+  // Wrap BLE commands so the UI layer remains device‑agnostic
+  ble: {
+    readCodes:  () => [CMD.CMD_PENDING],
+    clearCodes: () => [CMD.CMD_CLEAR],
+    status:     () => [CMD.CMD_STATUS],
+    liveStart:  () => [CMD.CMD_LIVE_START],
+    liveStop:   () => [CMD.CMD_LIVE_STOP],
+  },
+};
+```
 ---

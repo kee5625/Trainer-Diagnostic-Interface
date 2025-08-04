@@ -27,6 +27,7 @@ export default function TrainerHome({ trainer }) {
 
   /* ─────────────────────────────── render ─────────────────────────────── */
   return (
+    
     <div className="w-full h-full flex justify-center items-center p-4 sm:p-6 lg:p-8">
       <div className="
           relative flex flex-row gap-10

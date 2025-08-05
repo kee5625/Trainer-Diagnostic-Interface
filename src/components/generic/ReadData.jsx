@@ -173,58 +173,46 @@ export default function ReadData({trainer}){
         {displayedPids.length > 0 && (
           <div className="w-full px-4">
             <h2 className="text-2xl text-white mb-2">Active Parameters</h2>
-            <table className="w-full bg-gray-800 text-white rounded overflow-hidden">
-              <thead className="bg-gray-700">
-                <tr>
-                  <th className="p-2 text-left">PID</th>
-                  <th className="p-2 text-left">Name</th>
-                  <th className="p-2 text-left">Value</th>
-                  <th className="p-2 text-left">Unit</th>
-                </tr>
-              </thead>
-              <tbody>
-                {displayedPids.map(pid => {
-                  const raw = pidData[pid] ?? []
-                  const decoded = getDecoder(pid)(raw)
-                  
+            <div className='overflow-y-auto max-h-[400px] lg:max-h-[500px]'>
+              <table className="w-full bg-gray-800 text-white rounded overflow-hidden">
+                <thead className="bg-gray-700">
+                  <tr>
+                    <th className="p-2 text-left">PID</th>
+                    <th className="p-2 text-left">Name</th>
+                    <th className="p-2 text-left">Value</th>
+                    <th className="p-2 text-left">Unit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {displayedPids.map(pid => {
+                    const raw = pidData[pid] ?? []
+                    const decoded = getDecoder(pid)(raw)
+                    
 
-                  // metadata lookup
-                  const meta = pidMeta[pid];
-                  const description = meta?.description ?? FALLBACK(pid);
-                  const unit = meta?.unit ?? '';
+                    // metadata lookup
+                    const meta = pidMeta[pid];
+                    const description = meta?.description ?? FALLBACK(pid);
+                    const unit = meta?.unit ?? '';
 
-                  return (
-                    <tr key={pid} className="border-t border-slate-700">
-                      <td className="px-4 py-2">
-                        0x{pid.toString(16).toUpperCase().padStart(2,'0')}
-                      </td>
-                      <td className="px-4 py-2">{description}</td>
-                      <td className={`px-4 py-2 ${highlight ? 'bg-green-700' : ''}`}>
-                        {raw.length ? decoded : '—'}
-                      </td>
-                      <td className="px-4 py-2">{unit}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                    return (
+                      <tr key={pid} className="border-t border-slate-700">
+                        <td className="px-4 py-2">
+                          0x{pid.toString(16).toUpperCase().padStart(2,'0')}
+                        </td>
+                        <td className="px-4 py-2">{description}</td>
+                        <td className={`px-4 py-2 ${highlight ? 'bg-green-700' : ''}`}>
+                          {raw.length ? decoded : '—'}
+                        </td>
+                        <td className="px-4 py-2">{unit}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            
           </div>
         )}
-    </div>
-  );
-}
-
-function Card({ img, title, children, highlight }) {
- 
-  return (
-    <div className="h-full flex flex-col items-center justify-center my-6 bg-slate-700 shadow-lg border border-slate-600 rounded-xl w-[300px]">
-      <div className="relative w-[80%] aspect-square m-4 bg-gradient-to-tr from-slate-600 to-slate-800 rounded-lg border border-slate-500 flex items-center justify-center shadow-inner">
-        <img src={img} alt={title} className="object-contain w-3/4 h-3/4" />
-      </div>
-      <div className="px-4 pb-4">
-        <h6 className="mb-1 text-white text-lg font-semibold text-center">{title}</h6>
-        <p className={`${highlight ? "bg-green-700 text-white" : ""}text-white text-sm text-center rounded-xl py-2 w-full`}>{children}</p>
-      </div>
     </div>
   );
 }

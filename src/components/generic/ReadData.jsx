@@ -35,12 +35,20 @@ export default function ReadData({trainer}){
  // Parse incoming BLE notifications
   useEffect(() => {
     const unsub = onBLEData(raw => {
-      // --- mask row: raw = [0x00, b0,b1,b2,b3] ---
-      if (raw[0] === 0x00 && raw.length === ROW_BYTES + 2) {
-        const row = raw[1];
+      // --- mask row: raw[0]=0x00, raw.length=5 (no index) or 6 (with index) ---
+      if (raw[0] === 0x00 && (raw.length === ROW_BYTES + 1 || raw.length === ROW_BYTES + 2)) {
+        let row, bytes;
+        if (raw.length === ROW_BYTES + 2) {
+          // legacy/full‐mask: [0x00, row, b0,b1,b2,b3]
+          row   = raw[1];
+          bytes = raw.slice(2);
+        } else {
+          // your current firmware: [0x00, b0,b1,b2,b3]
+          row   = rowsSeen.current.size;
+          bytes = raw.slice(1);
+        }
         if (row >= 0 && row < MASK_ROWS) {
-          // copy those 4 bytes into the correct 4-byte slot
-          maskBuf.current.set(raw.slice(2), row * ROW_BYTES);
+          maskBuf.current.set(bytes, row * ROW_BYTES);
           rowsSeen.current.add(row);
         }
 
@@ -48,26 +56,24 @@ export default function ReadData({trainer}){
         if (rowsSeen.current.size === MASK_ROWS) {
           const pidSet = new Set();
           maskBuf.current.forEach((byte, idx) => {
-            const row       = Math.floor(idx / ROW_BYTES);
-            const byteIndex = idx % ROW_BYTES;
+            const r = Math.floor(idx / ROW_BYTES);
+            const b = idx % ROW_BYTES;
             for (let bit = 0; bit < 8; bit++) {
-              // 1 << (7 - bit) because OBD bit-0 is MSB
               if (byte & (1 << (7 - bit))) {
-                // 32 PIDs per row = 4 bytes * 8 bits
-                const pid = row * 0x20 + byteIndex * 8 + bit + 1;
-                pidSet.add(pid);
+                pidSet.add(r * 0x20 + b * 8 + bit + 1);
               }
             }
           });
-          // turn into a sorted array
-          const pids = Array.from(pidSet).filter(pid => pid !== 0x02).sort((a, b) => a - b);
+          const pids = Array.from(pidSet)
+            .filter(pid => pid !== 0x02 && (pid & 0x1F) !== 0)
+            .sort((a, b) => a - b);
+          
           setSupportedPids(pids);
+          setLoading(true);
+          //requestData(pids).finally(() => setLoading(false));
 
-          // clear for next time
           rowsSeen.current.clear();
           maskBuf.current.fill(0);
-
-          //requestData(pids);
         }
         return;
       }
@@ -106,13 +112,13 @@ export default function ReadData({trainer}){
       setLoading(false);
     }
   };
-
+  
   useEffect(() => {
-    if (ble.connected && ble.notifying && displayedPids.length) {
+    if (streaming && supportedPids.length) {
       setLoading(true);
-      requestData(displayedPids).finally(() => setLoading(false));
+      requestData(supportedPids).finally(() => setLoading(false));
     }
-  }, [ble.connected, ble.notifying, displayedPids]);
+  }, [streaming, supportedPids]);
 
   const startHandler = async () => {
     try {
@@ -126,7 +132,7 @@ export default function ReadData({trainer}){
       setStreaming(false);
     } catch {}
   };
-  useEffect(() => () => streaming && stopLiveStream(), [streaming]);
+  
 
   return (
     <div className="flex items-center flex-col justify-center w-full">

@@ -1,146 +1,132 @@
 // src/components/generic/ReadData.jsx
-import { useState, useEffect, useMemo } from 'react';
-import ignitionSwitchImg  from '/ignition_switch.png';
-import adjusterSwitchImg  from '/adjuster_switch.png';
-import lumbarSwitchImg   from '/lumbar_switch.png';
-
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { pidMeta, getDecoder } from '../../data/pidDecoder';
 
-import {requestStatus, onSeatStatus, requestLiveStop, requestLiveStart } from '../../core/ble/commands';
+import {requestData, onBLEData, stopLiveStream, startLiveStream } from '../../core/ble/commands';
 import { onBleNotify, onBleState } from '../../core/ble/core';
 import { useNavigate } from 'react-router-dom';
 
-const FALLBACK_NAME = pid => `0x${pid.toString(16).toUpperCase().padStart(2,'0')}` // In case PID LIbrary doesnt have a description
+const FALLBACK = pid => `0x${pid.toString(16).toUpperCase().padStart(2,"0")}`; // In case PID LIbrary doesnt have a description
 
 
 export default function ReadData({trainer}){
   const navigate = useNavigate();
 
   // BLE State
-  const [ble, setBle] = useState({ connected:false, notifying:false });
+  const [ble, setBle] = useState({ connected: false, notifying: false });
   useEffect(() => onBleState(setBle), []);
+
+  const MASK_ROWS = 7, ROW_BYTES = 4;
 
   // UI Flags
   const [streaming, setStreaming] = useState(false);
-  const [ignition, setIgnition] = useState('OFF');
-  const [adjuster, setAdjuster] = useState('NEUTRAL');
-  const [lumbar,   setLumbar]   = useState('NEUTRAL');
   const [loading, setLoading] = useState(false);  // used to track button loading state
   const [highlight, setHighlight] = useState(false); // used to highlight the fetched data
 
   // List of PIDS (first 0x00 frame)
+  const [pidData, setPidData]             = useState({});
+
+  const maskBuf = useRef(new Uint8Array(MASK_ROWS * ROW_BYTES));
+  const rowsSeen = useRef(new Set());
   const [supportedPids, setSupportedPids] = useState([]);
-  const [pidData, setPidData] = useState({})  //latest raw‐value map
-  let maskBuf = []  
-  const MASK_LEN = 1 + 7*4  
 
-
-  //helper function for ui smoothness
-  function sleep(ms){ //Temporary sleep function for ui smoothness
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
 
   /* ----- BLE notification handler ----- */
+ // Parse incoming BLE notifications
   useEffect(() => {
-    const unsub = onBleNotify(raw => {
-      // --- 1) Bitmask comes in as [0x00, B0, B1, ..., B27] ---
-      if (raw[0] === 0x00) {
-        maskBuf = maskBuf.concat(Array.from(raw))
-        if (maskBuf.length >= MASK_LEN) {
-          // once we’ve got all 29 bytes, parse them:
-          const maskBytes = maskBuf.slice(1, MASK_LEN)
-          const pids = []
-          maskBytes.forEach((b,i) => {
-            for (let bit=0; bit<8; bit++) {
-              if (b & (1 << (7-bit))) {
-                pids.push(i*8 + bit + 1)
+    const unsub = onBLEData(raw => {
+      // --- mask row: raw = [0x00, b0,b1,b2,b3] ---
+      if (raw[0] === 0x00 && raw.length === ROW_BYTES + 2) {
+        const row = raw[1];
+        if (row >= 0 && row < MASK_ROWS) {
+          // copy those 4 bytes into the correct 4-byte slot
+          maskBuf.current.set(raw.slice(2), row * ROW_BYTES);
+          rowsSeen.current.add(row);
+        }
+
+        // once we've got all 7 rows, decode them:
+        if (rowsSeen.current.size === MASK_ROWS) {
+          const pidSet = new Set();
+          maskBuf.current.forEach((byte, idx) => {
+            const row       = Math.floor(idx / ROW_BYTES);
+            const byteIndex = idx % ROW_BYTES;
+            for (let bit = 0; bit < 8; bit++) {
+              // 1 << (7 - bit) because OBD bit-0 is MSB
+              if (byte & (1 << (7 - bit))) {
+                // 32 PIDs per row = 4 bytes * 8 bits
+                const pid = row * 0x20 + byteIndex * 8 + bit + 1;
+                pidSet.add(pid);
               }
             }
-          })
-          setSupportedPids(pids)
-          maskBuf = []      // reset for next time
+          });
+          // turn into a sorted array
+          const pids = Array.from(pidSet).filter(pid => pid !== 0x02).sort((a, b) => a - b);
+          setSupportedPids(pids);
+
+          // clear for next time
+          rowsSeen.current.clear();
+          maskBuf.current.fill(0);
+
+          //requestData(pids);
         }
-        return
+        return;
       }
 
-      // --- 2) Otherwise this is a PID/value frame: [PID, val, PID, val, ...] ---
-      if (raw.length < 2 || (raw.length & 1)) return;
-      if (supportedPids.length === 0 && raw[0] !== 0x00) {
-         setSupportedPids(p => p.includes(raw[0]) ? p : [...p, raw[0]]);
-       }
-      setPidData(prev => {
-        const next = { ...prev }
-        for (let i = 0; i < raw.length; i += 2) {
-          next[ raw[i] ] = [ raw[i+1] ]
+      // --- PID/value pairs: [pid,val, pid,val, …] ---
+       if (raw.length >= 2 && raw[0] !== 0x00) {
+        setPidData(prev => {
+          const next = { ...prev };
+          for (let i=0; i<raw.length; i+=2) {
+            next[ raw[i] ] = [ raw[i+1] ];
+          }
+          next[ raw[0] ] = Array.from(raw.slice(1));
+          return next;
+        });
+        if (!streaming) {
+          setHighlight(true);
+          setTimeout(() => setHighlight(false), 800);
         }
-        return next
-      })
-
-      // flash highlight for one‐shot
-      if (!streaming) {
-        setHighlight(true)
-        setTimeout(() => setHighlight(false), 800)
       }
-    })
-
-    return unsub
-  }, [])
+    });
+    return unsub;
+  }, [streaming]);
 
   // sorted list of PIDs we actually have data for
   const displayedPids = useMemo(() => {
-    // if we already have a full mask, slice out the first 20 supported PIDs
-    if (supportedPids.length) {
-      return supportedPids.slice(0, 20);
-    }
-    // otherwise default to 0x01–0x14
-    return Array.from({ length: 20 }, (_, i) => i + 1);
+    if (supportedPids.length) return supportedPids.slice(0, 20);
+    return Array.from({length:20}, (_,i) => i+1);
   }, [supportedPids]);
 
-  const fetchOnce = async () => {
-    if (!ble.notifying) return
-    setLoading(true)
+  const fetchOnce = async (pids) => {
+    if (!ble.notifying) return;
+    setLoading(true);
     try {
-      /* Try the first 20 supported PIDs, or 0x01-0x14 if mask not fetched yet */
-      const wanted = supportedPids.length
-        ? supportedPids.slice(0,20)
-        : Array.from({length: 20}, (_,i) => i + 1);
-      await requestStatus(wanted);
-    }finally{setLoading(false)}
-  }
+      await requestData(pids);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (ble.connected && ble.notifying && displayedPids.length) {
       setLoading(true);
-      requestStatus(displayedPids).finally(() => setLoading(false));
+      requestData(displayedPids).finally(() => setLoading(false));
     }
   }, [ble.connected, ble.notifying, displayedPids]);
-  
-  const startStream = async () => {
+
+  const startHandler = async () => {
     try {
-      await requestLiveStart();  // writes 0x06
+      await startLiveStream();
       setStreaming(true);
-      
-    }catch(error){
-      console.log("Error trying to start stream: ", error);
-    }
+    } catch {}
   };
-
-  // add a button to stop live data stream
-  const stopStreamHandler = async () => {
+  const stopHandler = async () => {
     try {
-      await requestLiveStop();   // writes 0x07
+      await stopLiveStream();
       setStreaming(false);
-    } catch (error) {
-      console.log("Error trying to stop stream: ", error);
-    }
+    } catch {}
   };
-
-  // always clean up
-  useEffect(() => {
-    return () => {
-      if (streaming) requestLiveStop()
-    }
-  }, [streaming])
+  useEffect(() => () => streaming && stopLiveStream(), [streaming]);
 
   return (
     <div className="flex items-center flex-col justify-center w-full">
@@ -149,7 +135,7 @@ export default function ReadData({trainer}){
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
-            className='w-9 h-9'
+            className='w-8 h-8'
           >
             <path
               fill="currentColor"
@@ -157,44 +143,25 @@ export default function ReadData({trainer}){
             ></path>
           </svg>
         </button>
-        <h1 className="text-4xl">Live Data</h1>
+        <h1 className="text-3xl">Live Data</h1>
       </div>
       
-      <div className="gap-5 flex p-5 flex-row justify-center">
+      <div className="gap-4 flex pt-5 flex-row justify-center">
         <button
           disabled={!ble.connected || !ble.notifying }
-          className={`${!ble.notifying ? 'opacity-60 cursor-not-allowed' : ''} inline-block w-full text-center text-lg min-w-[200px] px-6 py-6 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b`}
+          className={`${!ble.notifying ? 'opacity-60 cursor-not-allowed' : ''} inline-block w-full text-center text-lg min-w-[150px] px-5 py-4 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b`}
           onClick={fetchOnce}
         >
           {loading ? "Analyzing..." : "Get Data"}
         </button>
         <button
           disabled={!ble.connected}
-          className={`${!ble.notifying ? 'opacity-60 cursor-not-allowed' : ''} inline-block w-full text-center text-lg min-w-[200px] px-6 py-6 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b`}
-          onClick={streaming ? stopStreamHandler : startStream}
+          className={`${!ble.notifying ? 'opacity-60 cursor-not-allowed' : ''} inline-block w-full text-center text-lg min-w-[150px] px-5 py-4 text-white transition-all rounded-2xl shadow-lg sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b`}
+          onClick={streaming ? stopHandler : startHandler}
         >
           {streaming ? "Stop Stream" : "Live Stream"}
         </button>
       </div>
-      
-
-      {/* 
-      <div  className="grid grid-cols-3 gap-10">
-        {/* Ignition ---------------------------------------------------- }
-        <Card img={ignitionSwitchImg} title="Ignition Switch" highlight={highlight}>
-          Status:&nbsp;<strong>{ignition}</strong>
-        </Card>
-
-        {/* Seat Adjuster ---------------------------------------------- }
-        <Card img={adjusterSwitchImg} title="Seat Adjuster Switch" highlight={highlight}>
-          Position:&nbsp;<strong>{adjuster}</strong>
-        </Card>
-
-        {/* Lumbar ------------------------------------------------------ }
-        <Card img={lumbarSwitchImg} title="Lumbar Adjuster Switch" highlight={highlight}>
-          Position:&nbsp;<strong>{lumbar}</strong>
-        </Card>
-      </div>*/}
 
       {/* 4. Dynamic table of active PIDs */}
         {displayedPids.length > 0 && (
@@ -217,7 +184,7 @@ export default function ReadData({trainer}){
 
                   // metadata lookup
                   const meta = pidMeta[pid];
-                  const description = meta?.description ?? FALLBACK_NAME(pid);
+                  const description = meta?.description ?? FALLBACK(pid);
                   const unit = meta?.unit ?? '';
 
                   return (

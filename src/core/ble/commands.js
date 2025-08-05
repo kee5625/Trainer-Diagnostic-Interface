@@ -10,17 +10,21 @@ export const CMD_LIVE_STOP   = 0x07;
 
 export const requestDTC = (cmd = CMD_PENDING) => writeCommand([cmd]);
 export const clearCodes = () => writeCommand([CMD_CLEAR]);
-export const requestStatus = (pids = []) => writeCommand([CMD_STATUS, ...pids]);
+export const requestData = (pids = []) =>
+  writeCommand([CMD_STATUS, ...pids]);
 
-export function requestLiveStart() {
-    // send toggle on 
-    return writeCommand([CMD_LIVE_START]);
-}
+export const startLiveStream = () =>
+  writeCommand([CMD_LIVE_START]);
 
 //send stop cmd
-export function requestLiveStop() {
-    return writeCommand([CMD_LIVE_STOP]);
-}
+export const stopLiveStream = () =>
+  writeCommand([CMD_LIVE_STOP]);
+
+export const onBLEData = (cb) =>
+  onBleNotify(raw => {
+    console.log('BLE RX raw:', raw)
+    cb(raw)
+  });
 
 // custom PID values for adjust switchers (currently not implemented)
 const DIR = ['NEUTRAL', 'UP', 'DOWN', 'LEFT', 'RIGHT'];

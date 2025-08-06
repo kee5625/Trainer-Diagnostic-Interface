@@ -179,3 +179,10 @@ export default {
 };
 ```
 ---
+
+## 7. Next Steps
+
+1. Cleanup and fix overlap error with "Get Data" Backend - start, stop, and status commands overlap with PID 0x05, 0x06, 0x07
+2. Implement live stream functionality
+3. Add Guardrails (stop live stream upon dismount)
+4. Generalize BLE Characteristics and Service UUIDs for different trainers.

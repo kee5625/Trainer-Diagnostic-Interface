@@ -48,6 +48,7 @@ export default function ReadCodes( {trainer}) {
 
   useEffect(() => onBleState(setBle), []);
 
+  // Dynamically update the dtc list based on changes
   useEffect(() => {
     return onDtc(({ cleared, list }) => {
       setDtc(prev => ({
@@ -83,6 +84,7 @@ export default function ReadCodes( {trainer}) {
     }
   };
 
+  // clear codes button handler
   const ClearCodes = async () => {
     if (!ble.notifying) {
       console.warn("BLE not ready");
@@ -101,6 +103,7 @@ export default function ReadCodes( {trainer}) {
     }
   }
 
+  // trouble code handlers for different buttons
   const fetchStored = () => fetchCategory(CMD_STORED, 'stored', setStoredLoading);
 
   const fetchPending = () => fetchCategory(CMD_PENDING, 'pending', setLoading);

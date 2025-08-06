@@ -14,16 +14,12 @@ export default function TrainerHome({ trainer }) {
     try { await fn(); } finally { setLoading(false); }
   };
 
-  const connectBle    = withSpinner(connect);
+  const connectBle = withSpinner(connect);
 
   const handleDisconnect = withSpinner(async () => {
     await new Promise(res => setTimeout(res, 2000));  // keep spinner up
     await disconnect();
   });
-
-  function sleep(ms){
-      return new Promise(resolve => setTimeout(resolve, ms));
-  }
 
   /* ─────────────────────────────── render ─────────────────────────────── */
   return (

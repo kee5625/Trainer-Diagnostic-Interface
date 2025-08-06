@@ -17,6 +17,7 @@ export default function Help() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Sending the form
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 

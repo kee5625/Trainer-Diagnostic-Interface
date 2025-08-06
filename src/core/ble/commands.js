@@ -1,5 +1,6 @@
 import { writeCommand, onBleNotify } from "./core";
 
+// CMDs for Trouble code and Read Data Functionality
 export const CMD_PENDING = 0x01;
 export const CMD_STORED = 0x02;
 export const CMD_PERM = 0x03;
@@ -10,6 +11,8 @@ export const CMD_LIVE_STOP   = 0x07;
 
 export const requestDTC = (cmd = CMD_PENDING) => writeCommand([cmd]);
 export const clearCodes = () => writeCommand([CMD_CLEAR]);
+
+// Standalone function for simply returning the mask
 export const requestMask = () =>
   writeCommand([CMD_STATUS]);
 
@@ -19,6 +22,7 @@ export const requestPid = (pid) =>
 export const requestData = () => 
   requestMask();
 
+//send start cmd
 export const startLiveStream = () =>
   writeCommand([CMD_LIVE_START]);
 
@@ -89,7 +93,7 @@ export function onSeatStatus(cb){
     });
 }
 
-// Used for live streaming data and getting all PID values
+// Used for live streaming data and getting all PID values 
 export function subscribeAll(period = 500) {
     const timer = setInterval(requestStatus, period);
     return () => clearInterval(timer);

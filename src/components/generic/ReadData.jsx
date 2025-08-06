@@ -84,20 +84,20 @@ export default function ReadData({trainer}){
       }
 
       // --- PID/value pairs: [pid,val, pid,val, …] ---
-       if (raw.length >= 2 && raw[0] !== 0x00) {
-        setPidData(prev => {
-          const next = { ...prev };
-          for (let i=0; i<raw.length; i+=2) {
-            next[ raw[i] ] = [ raw[i+1] ];
-          }
-          next[ raw[0] ] = Array.from(raw.slice(1));
-          return next;
-        });
-        if (!streaming) {
-          setHighlight(true);
-          setTimeout(() => setHighlight(false), 800);
+      if (raw.length >= 2 && raw[0] !== 0x00) {
+      setPidData(prev => {
+        const next = { ...prev };
+        for (let i=0; i<raw.length; i+=2) {
+          next[ raw[i] ] = [ raw[i+1] ];
         }
+        next[ raw[0] ] = Array.from(raw.slice(1));
+        return next;
+      });
+      if (!streaming) {
+        setHighlight(true);
+        setTimeout(() => setHighlight(false), 800);
       }
+    }
     });
     return unsub;
   }, [streaming]);

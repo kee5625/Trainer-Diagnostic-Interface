@@ -9,6 +9,7 @@ export default function Header({setShowModal}) {
     const [ble, setBle] = useState({connected: false, notifying: false});
     const [currentTab, setCurrentTab] = useState("home");
 
+    // Disconnect device everytime user navigates to another page thats not the trainer's page
     const handleCleanup = async (path, tabName) => {
         try{
             if(ble.connected){

@@ -10,8 +10,14 @@ export const CMD_LIVE_STOP   = 0x07;
 
 export const requestDTC = (cmd = CMD_PENDING) => writeCommand([cmd]);
 export const clearCodes = () => writeCommand([CMD_CLEAR]);
-export const requestData = (pids = []) =>
-  writeCommand([CMD_STATUS, ...pids]);
+export const requestMask = () =>
+  writeCommand([CMD_STATUS]);
+
+export const requestPid = (pid) =>
+  writeCommand([pid]);
+
+export const requestData = () => 
+  requestMask();
 
 export const startLiveStream = () =>
   writeCommand([CMD_LIVE_START]);

@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { pidMeta, getDecoder } from '../../data/pidDecoder';
 
-import {requestData, onBLEData, stopLiveStream, startLiveStream } from '../../core/ble/commands';
+import {requestMask, requestPid, onBLEData, stopLiveStream, startLiveStream} from '../../core/ble/commands';
 import { onBleNotify, onBleState } from '../../core/ble/core';
 import { useNavigate } from 'react-router-dom';
 
@@ -29,10 +29,10 @@ export default function ReadData({trainer}){
   const maskBuf = useRef(new Uint8Array(MASK_ROWS * ROW_BYTES));
   const rowsSeen = useRef(new Set());
   const [supportedPids, setSupportedPids] = useState([]);
-
+  const awaitingMask = useRef(false);
 
   /* ----- BLE notification handler ----- */
- // Parse incoming BLE notifications
+  // Parse incoming BLE notifications
   useEffect(() => {
     const unsub = onBLEData(raw => {
       // --- mask row: raw[0]=0x00, raw.length=5 (no index) or 6 (with index) ---
@@ -43,7 +43,7 @@ export default function ReadData({trainer}){
           row   = raw[1];
           bytes = raw.slice(2);
         } else {
-          // your current firmware: [0x00, b0,b1,b2,b3]
+          // [0x00, b0,b1,b2,b3]
           row   = rowsSeen.current.size;
           bytes = raw.slice(1);
         }
@@ -69,8 +69,13 @@ export default function ReadData({trainer}){
             .sort((a, b) => a - b);
           
           setSupportedPids(pids);
-          setLoading(true);
-          //requestData(pids).finally(() => setLoading(false));
+          if (awaitingMask.current) {
+            awaitingMask.current = false;
+            for (let pid of pids){
+              requestPid(pid);
+            }
+            setLoading(false);
+          }
 
           rowsSeen.current.clear();
           maskBuf.current.fill(0);
@@ -97,7 +102,7 @@ export default function ReadData({trainer}){
     return unsub;
   }, [streaming]);
 
-  // sorted list of PIDs we actually have data for
+  // PIDs we want
   const displayedPids = useMemo(() => {
     if (supportedPids.length) return supportedPids.slice(0, 20);
     return Array.from({length:20}, (_,i) => i+1);
@@ -106,33 +111,25 @@ export default function ReadData({trainer}){
   const fetchOnce = async (pids) => {
     if (!ble.notifying) return;
     setLoading(true);
-    try {
-      await requestData(pids);
-    } finally {
-      setLoading(false);
-    }
+    awaitingMask.current = true;
+    requestMask();
   };
-  
-  useEffect(() => {
-    if (streaming && supportedPids.length) {
-      setLoading(true);
-      requestData(supportedPids).finally(() => setLoading(false));
-    }
-  }, [streaming, supportedPids]);
 
+  // Start stream handler
   const startHandler = async () => {
     try {
       await startLiveStream();
       setStreaming(true);
     } catch {}
   };
+
+  // Stop stream function for stream
   const stopHandler = async () => {
     try {
       await stopLiveStream();
       setStreaming(false);
     } catch {}
   };
-  
 
   return (
     <div className="flex items-center flex-col justify-center w-full">
@@ -171,7 +168,7 @@ export default function ReadData({trainer}){
 
       {/* 4. Dynamic table of active PIDs */}
         {displayedPids.length > 0 && (
-          <div className="w-full px-4">
+          <div className="w-[80%] px-4">
             <h2 className="text-2xl text-white mb-2">Active Parameters</h2>
             <div className='overflow-y-auto max-h-[400px] lg:max-h-[500px]'>
               <table className="w-full bg-gray-800 text-white rounded overflow-hidden">
@@ -188,7 +185,6 @@ export default function ReadData({trainer}){
                     const raw = pidData[pid] ?? []
                     const decoded = getDecoder(pid)(raw)
                     
-
                     // metadata lookup
                     const meta = pidMeta[pid];
                     const description = meta?.description ?? FALLBACK(pid);

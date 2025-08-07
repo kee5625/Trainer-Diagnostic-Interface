@@ -167,48 +167,48 @@ export default function ReadData({trainer}){
       </div>
 
       {/* 4. Dynamic table of active PIDs */}
-        {displayedPids.length > 0 && (
-          <div className="w-[80%] px-4">
-            <h2 className="text-2xl text-white mb-2">Active Parameters</h2>
-            <div className='overflow-y-auto max-h-[400px] lg:max-h-[500px]'>
-              <table className="w-full bg-gray-800 text-white rounded overflow-hidden">
-                <thead className="bg-gray-700">
-                  <tr>
-                    <th className="p-2 text-left">PID</th>
-                    <th className="p-2 text-left">Name</th>
-                    <th className="p-2 text-left">Value</th>
-                    <th className="p-2 text-left">Unit</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {displayedPids.map(pid => {
-                    const raw = pidData[pid] ?? []
-                    const decoded = getDecoder(pid)(raw)
-                    
-                    // metadata lookup
-                    const meta = pidMeta[pid];
-                    const description = meta?.description ?? FALLBACK(pid);
-                    const unit = meta?.unit ?? '';
+      {displayedPids.length > 0 && (
+        <div className="w-[80%] px-4">
+          <h2 className="text-2xl text-white mb-2">Active Parameters</h2>
+          <div className='overflow-y-auto max-h-[400px] lg:max-h-[500px]'>
+            <table className="w-full bg-gray-800 text-white rounded overflow-hidden">
+              <thead className="bg-gray-700">
+                <tr>
+                  <th className="p-2 text-left">PID</th>
+                  <th className="p-2 text-left">Name</th>
+                  <th className="p-2 text-left">Value</th>
+                  <th className="p-2 text-left">Unit</th>
+                </tr>
+              </thead>
+              <tbody>
+                {displayedPids.map(pid => {
+                  const raw = pidData[pid] ?? []
+                  const decoded = getDecoder(pid)(raw)
+                  
+                  // metadata lookup
+                  const meta = pidMeta[pid];
+                  const description = meta?.description ?? FALLBACK(pid);
+                  const unit = meta?.unit ?? '';
 
-                    return (
-                      <tr key={pid} className="border-t border-slate-700">
-                        <td className="px-4 py-2">
-                          0x{pid.toString(16).toUpperCase().padStart(2,'0')}
-                        </td>
-                        <td className="px-4 py-2">{description}</td>
-                        <td className={`px-4 py-2 ${highlight ? 'bg-green-700' : ''}`}>
-                          {raw.length ? decoded : '—'}
-                        </td>
-                        <td className="px-4 py-2">{unit}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            
+                  return (
+                    <tr key={pid} className="border-t border-slate-700">
+                      <td className="px-4 py-2">
+                        0x{pid.toString(16).toUpperCase().padStart(2,'0')}
+                      </td>
+                      <td className="px-4 py-2">{description}</td>
+                      <td className={`px-4 py-2 ${highlight ? 'bg-green-700' : ''}`}>
+                        {raw.length ? decoded : '—'}
+                      </td>
+                      <td className="px-4 py-2">{unit}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-        )}
+          
+        </div>
+      )}
     </div>
   );
 }

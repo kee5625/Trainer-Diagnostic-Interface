@@ -1,8 +1,21 @@
 import toast from "react-hot-toast";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import emailjs from '@emailjs/browser';
 
 // Help page for sending any problems
 export default function Help() {
+  const form = useRef<HTMLFormElement>(null);
+  const [loading, setLoading] = useState(false);
+
+  const withSpinner = (fn: () => Promise<void>) => async () => {
+    setLoading(true);
+    try { 
+      await fn(); 
+    } finally { 
+      setLoading(false); 
+    }
+  };
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -17,10 +30,42 @@ export default function Help() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Sending the form
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const sendEmail = async (): Promise<void> => {
+    if (!form.current) return;
 
+    try {
+      await emailjs.sendForm('service_eb4yijb', 'template_6ewub4e', form.current, {
+        publicKey: 'QQOQNWB-HjrbE6ZsT',
+      });
+      console.log('SUCCESS!');
+      
+      // Show success message first
+      toast(
+        <div>
+          <strong>Message sent successfully!</strong>
+          <div>We'll get back to you within 24 hours.</div>
+        </div>
+      );
+      
+      // Wait 2 seconds before clearing the form to let user see the success message
+      setTimeout(() => {
+        form.current?.reset();
+        setFormData({ name: "", email: "", subject: "", message: "" });
+      }, 2000);
+      
+    } catch (error: any) {
+      console.log('FAILED...', error.text);
+      toast(
+        <div>
+          <strong>Failed to send message</strong>
+          <div>Please try again or contact us directly.</div>
+        </div>
+      );
+    }
+  };
+
+  // Sending the form
+  const handleSubmit = withSpinner(async () => {
     if (!formData.name || !formData.email || !formData.message) {
       toast(
         <div>
@@ -31,14 +76,12 @@ export default function Help() {
       return;
     }
 
-    toast(
-      <div>
-        <strong>Message sent successfully!</strong>
-        <div>We'll get back to you within 24 hours.</div>
-      </div>
-    );
+    await sendEmail();
+  });
 
-    setFormData({ name: "", email: "", subject: "", message: "" });
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSubmit();
   };
 
   return (
@@ -65,7 +108,8 @@ export default function Help() {
           </div>
 
           <form
-            onSubmit={handleSubmit}
+            ref={form}
+            onSubmit={onSubmit}
             className="space-y-5 p-6 w-full max-w-lg"
           >
             <div className="flex flex-col md:flex-row md:space-x-5 space-y-5 md:space-y-0">
@@ -132,9 +176,36 @@ export default function Help() {
 
             <button
               type="submit"
-              className="w-full py-2 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 transition-all duration-300 text-white font-medium"
+              disabled={loading}
+              className="w-full py-2 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 transition-all duration-300 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Send Message
+              {loading ? (
+                <>
+                  <svg
+                    className="animate-spin h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Sending...
+                </>
+              ) : (
+                "Send Message"
+              )}
             </button>
           </form>
         </div>

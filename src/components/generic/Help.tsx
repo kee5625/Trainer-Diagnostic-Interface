@@ -227,7 +227,7 @@ export default function Help() {
               />
               <ContactItem
                 label="Toll Free"
-                value="1-888-738-9924"
+                value="+1 888-738-9924"
                 color="purple"
               />
               <ContactItem
@@ -314,9 +314,16 @@ function ContactItem({
   value: string;
   color: string;
 }) {
+  const colorClasses = {
+    blue: "bg-blue-500/20",
+    purple: "bg-purple-500/20", 
+    green: "bg-green-500/20",
+    yellow: "bg-yellow-500/20",
+  };
+
   return (
     <div className="flex items-start space-x-4">
-      <div className={`p-3 bg-${color}-500/20 rounded-full`} />
+      <div className={`p-3 ${colorClasses[color as keyof typeof colorClasses] || 'bg-gray-500/20'} rounded-full`} />
       <div>
         <p className="text-white font-medium">{label}</p>
         <p className="text-gray-300 whitespace-pre-line">{value}</p>

@@ -5,6 +5,7 @@ import { Trainers } from './pages/Trainers';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Help from './components/generic/Help';
 
+
 export default function App() {
   return (
     <BrowserRouter>

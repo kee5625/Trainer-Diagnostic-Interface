@@ -6,16 +6,18 @@ import {requestMask, requestPid, onBLEData, stopLiveStream, startLiveStream} fro
 import { onBleNotify, onBleState } from '../../core/ble/core';
 import { useNavigate } from 'react-router-dom';
 
+// Fallback PID display if metadata library has no description
 const FALLBACK = pid => `0x${pid.toString(16).toUpperCase().padStart(2,"0")}`; // In case PID LIbrary doesnt have a description
 
 
 export default function ReadData({trainer}){
   const navigate = useNavigate();
 
-  // BLE State
+  // BLE Connection & Notifying State
   const [ble, setBle] = useState({ connected: false, notifying: false });
   useEffect(() => onBleState(setBle), []);
 
+   // Constants for PID mask decoding (7 rows of 4 bytes each) - similar to gateway
   const MASK_ROWS = 7, ROW_BYTES = 4;
 
   // UI Flags
@@ -23,9 +25,8 @@ export default function ReadData({trainer}){
   const [loading, setLoading] = useState(false);  // used to track button loading state
   const [highlight, setHighlight] = useState(false); // used to highlight the fetched data
 
-  // List of PIDS (first 0x00 frame)
+  // Storing data
   const [pidData, setPidData]             = useState({});
-
   const maskBuf = useRef(new Uint8Array(MASK_ROWS * ROW_BYTES));
   const rowsSeen = useRef(new Set());
   const [supportedPids, setSupportedPids] = useState([]);
@@ -52,7 +53,7 @@ export default function ReadData({trainer}){
           rowsSeen.current.add(row);
         }
 
-        // once we've got all 7 rows, decode them:
+        // once we've got all 7 rows, decode them into supported PID list:
         if (rowsSeen.current.size === MASK_ROWS) {
           const pidSet = new Set();
           maskBuf.current.forEach((byte, idx) => {
@@ -64,11 +65,15 @@ export default function ReadData({trainer}){
               }
             }
           });
+
+          // Filter out invalid/reserved PIDs and sort
           const pids = Array.from(pidSet)
             .filter(pid => pid !== 0x02 && (pid & 0x1F) !== 0)
             .sort((a, b) => a - b);
           
           setSupportedPids(pids);
+          
+          // If mask was requested via "Get Data", request values for all supported PIDs
           if (awaitingMask.current) {
             awaitingMask.current = false;
             for (let pid of pids){
@@ -77,6 +82,7 @@ export default function ReadData({trainer}){
             setLoading(false);
           }
 
+          // Reset mask buffer for next cycle
           rowsSeen.current.clear();
           maskBuf.current.fill(0);
         }
@@ -90,9 +96,12 @@ export default function ReadData({trainer}){
         for (let i=0; i<raw.length; i+=2) {
           next[ raw[i] ] = [ raw[i+1] ];
         }
+        // also store entire payload
         next[ raw[0] ] = Array.from(raw.slice(1));
         return next;
       });
+
+      // Flash highlight for one-time fetch
       if (!streaming) {
         setHighlight(true);
         setTimeout(() => setHighlight(false), 800);
@@ -102,12 +111,13 @@ export default function ReadData({trainer}){
     return unsub;
   }, [streaming]);
 
-  // PIDs we want
+  // Show either detected supported PIDs (first 20) or fallback 1-20
   const displayedPids = useMemo(() => {
     if (supportedPids.length) return supportedPids.slice(0, 20);
     return Array.from({length:20}, (_,i) => i+1);
   }, [supportedPids]);
 
+  // ACTION HANDLERS
   const fetchOnce = async (pids) => {
     if (!ble.notifying) return;
     setLoading(true);
